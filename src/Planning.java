@@ -1,13 +1,6 @@
 
-import java.awt.GridLayout;
+
 import java.util.List;
-
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JPasswordField;
-import javax.swing.JTextField;
-
 
 public class Planning {
 
@@ -33,46 +26,13 @@ public class Planning {
 						
 		}	
 		
-		JPanel panel = new JPanel();
-		JLabel lbPassword = new JLabel("Password:");
-		JLabel lbUser = new JLabel("User:");
-		JTextField txtLogin = new JTextField();
-		JPasswordField passw = new JPasswordField(10);
+		Login SystemLogin = new Login();
+		boolean logged = false;
 		
-		panel.setLayout(new GridLayout(2,2));
-		panel.add(lbUser);
-		panel.add(txtLogin);
-		panel.add(lbPassword);		
-		panel.add(passw);
+		SystemLogin.Show();
+		logged = SystemLogin.Log(mData);
 		
-		String[] options = new String[]{"OK", "Cancel"};
-		
-		JOptionPane.showOptionDialog(null, panel, "Login",JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,null, options, options[1]);
-		
-		String userLogin = txtLogin.getText();
-		String userPwd = new String(passw.getPassword());
-		
-		
-		boolean userFound = false;
-		
-		List<User> listUsers = mData.getUsersFromDatabase();
-		
-		for(User u:listUsers){
-			if(u.getLogin().equals(userLogin)){
-				userFound = true;
-				if(u.getPassword().equals(userPwd)){
-					JOptionPane.showMessageDialog(null,"Access Granted.");
-				}else{
-					JOptionPane.showMessageDialog(null,"Wrong Password");
-				}
-			}
-		}
-		
-		userPwd = "";		
-		if(!userFound)
-			JOptionPane.showMessageDialog(null,"Invalid User Name");
-		
-		
+		System.out.println(logged);
 		
 		mData.closeConnection();		
 	}

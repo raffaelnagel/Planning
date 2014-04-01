@@ -12,7 +12,7 @@ public class DatabaseConnection {
 	private boolean connected;
 	public Connection mConnection;
 	
-	public enum SqlCommand {
+	public static enum SqlCommand {
 	    INSERT, DELETE;
 	}
 	
@@ -73,6 +73,37 @@ public class DatabaseConnection {
 		return null;
 	}
 	
+	public List<Project> getProjectsFromDatabase(){
+		if(connected){						
+			try {
+				Statement mStatement = mConnection.createStatement();			
+				ResultSet queryResult = mStatement.executeQuery("SELECT * FROM Project");
+				
+				try {					
+					List<Project> mListProject = new ArrayList<Project>();
+					while(queryResult.next()){
+						
+						Project mProject = new Project();
+						mProject.setId(queryResult.getString("id"));
+						mProject.setPid(queryResult.getString("Pid"));
+						mProject.setName(queryResult.getString("Nome"));
+						mProject.setCategory(queryResult.getString("Categoria"));
+						mProject.setBrand(queryResult.getString("Brand"));
+						mProject.setDate(queryResult.getString("Data"));
+						mListProject.add(mProject);
+					}
+					return mListProject;
+					
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}		
+			} catch (SQLException e) {				
+				e.printStackTrace();
+			}			
+		}		
+		return null;
+	}
+	
 	public boolean LoginAlreadyExists(String login){
 		
 		List<User> mList = getUsersFromDatabase();
@@ -114,7 +145,10 @@ public class DatabaseConnection {
 		return false;
 	}	
 	
-	
+	public boolean updateProject(){
+		
+		return false;
+	}
 	
 	public void closeConnection() {
 		try {
