@@ -14,27 +14,38 @@ public class Planning {
 		DatabaseConnection mData = new DatabaseConnection(URL, login, pass);		
 		mData.openConnection();
 		
-		mData.updateUser(DatabaseConnection.SqlCommand.DELETE, new User("Jojo","Jojoxx","123"));
+		FrameSearch newFrame = new FrameSearch();
+		newFrame.show();
 		
-		List<User> mResult = mData.getUsersFromDatabase();			
-		if(mResult != null){
-			System.out.println("-- SQL RESULTS --");
-			for(User u:mResult){
-				System.out.println("Id: " + u.getId() + " Name: " + u.getName() + " Login: " + u.getLogin() + " Senha: " + u.getPassword());
-				System.out.println("----------------------------------------------");
-			}
-						
-		}	
+		//Login SystemLogin = new Login();
+		//SystemLogin.Show();
+		//boolean logged = SystemLogin.Log(mData);		
 		
-		Login SystemLogin = new Login();
-		boolean logged = false;
+		/*
+		if(logged){
 		
-		SystemLogin.Show();
-		logged = SystemLogin.Log(mData);
-		
-		System.out.println(logged);
-		
+			mData.updateUser(DatabaseConnection.SqlCommand.DELETE, new User("Jojo","Jojoxx","123"));
+			
+			List<User> mResult = mData.getUsersFromDatabase("name","Jojo");			
+			if(mResult != null){
+				System.out.println("-- SQL RESULTS --");
+				for(User u:mResult){
+					System.out.println("Id: " + u.getId() + " Name: " + u.getName() + " Login: " + u.getLogin() + " Senha: " + u.getPassword());
+					System.out.println("----------------------------------------------");
+				}
+							
+			}	
+					
+					
+			Project p = new Project("Project 3", "BAU", "Pallmall", "RIL");
+			mData.updateProject(DatabaseConnection.SqlCommand.INSERT, p);
+			
+			List<Project> listP = mData.getProjectsFromDatabase();			
+			p = listP.get(listP.size()-1);
+			mData.updateProject(DatabaseConnection.SqlCommand.DELETE, p);
+			
+		}
+		*/
 		mData.closeConnection();		
-	}
-	
+	}	
 }

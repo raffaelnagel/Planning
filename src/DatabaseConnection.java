@@ -1,8 +1,6 @@
-
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-
 
 public class DatabaseConnection {
 	
@@ -45,7 +43,7 @@ public class DatabaseConnection {
     }	
 		
 	public List<User> getUsersFromDatabase(){
-		if(connected){						
+		if(this.isConnected()){						
 			try {
 				Statement mStatement = mConnection.createStatement();			
 				ResultSet queryResult = mStatement.executeQuery("SELECT * FROM User");
@@ -73,8 +71,37 @@ public class DatabaseConnection {
 		return null;
 	}
 	
+	public List<User> getUsersFromDatabase(String Column, String Value){
+		if(this.isConnected()){						
+			try {
+				Statement mStatement = mConnection.createStatement();			
+				ResultSet queryResult = mStatement.executeQuery("SELECT * FROM User WHERE " + Column + " = '" + Value + "'");
+				
+				try {					
+					List<User> mListUser = new ArrayList<User>();
+					while(queryResult.next()){
+						
+						User mUser = new User();
+						mUser.setId(queryResult.getString("id"));
+						mUser.setName(queryResult.getString("name"));
+						mUser.setLogin(queryResult.getString("login"));
+						mUser.setPassword(queryResult.getString("password"));
+						mListUser.add(mUser);
+					}
+					return mListUser;
+					
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}		
+			} catch (SQLException e) {				
+				e.printStackTrace();
+			}			
+		}		
+		return null;
+	}
+	
 	public List<Project> getProjectsFromDatabase(){
-		if(connected){						
+		if(this.isConnected()){						
 			try {
 				Statement mStatement = mConnection.createStatement();			
 				ResultSet queryResult = mStatement.executeQuery("SELECT * FROM Project");
@@ -86,10 +113,11 @@ public class DatabaseConnection {
 						Project mProject = new Project();
 						mProject.setId(queryResult.getString("id"));
 						mProject.setPid(queryResult.getString("Pid"));
-						mProject.setName(queryResult.getString("Nome"));
-						mProject.setCategory(queryResult.getString("Categoria"));
+						mProject.setName(queryResult.getString("Name"));
+						mProject.setCategory(queryResult.getString("Category"));
 						mProject.setBrand(queryResult.getString("Brand"));
-						mProject.setDate(queryResult.getString("Data"));
+						mProject.setLeader(queryResult.getString("Leader"));
+						mProject.setDate(queryResult.getString("Date"));
 						mListProject.add(mProject);
 					}
 					return mListProject;
@@ -116,7 +144,7 @@ public class DatabaseConnection {
 	}
 	
 	public boolean updateUser(SqlCommand Cmd, User mUser){
-		if(connected){
+		if(this.isConnected()){
 			if(!LoginAlreadyExists(mUser.getLogin())){				
 				PreparedStatement mPreparedStatement;
 				try {
@@ -145,8 +173,36 @@ public class DatabaseConnection {
 		return false;
 	}	
 	
-	public boolean updateProject(){
-		
+	public boolean updateProject(SqlCommand Cmd, Project mProject){
+		if(this.isConnected()){				
+				PreparedStatement mPreparedStatement, mStatementUpdate=null;
+				try {
+					switch(Cmd){
+					case INSERT:
+						mPreparedStatement = mConnection.prepareStatement("INSERT INTO Project(Name,Category,Brand,Leader) VALUES(?,?,?,?)");
+						mStatementUpdate = mConnection.prepareStatement("UPDATE Project SET Pid = CONCAT(YEAR(Date), '_', id) WHERE Pid is NULL");
+						mPreparedStatement.setString(1, mProject.getName());
+						mPreparedStatement.setString(2, mProject.getCategory());
+						mPreparedStatement.setString(3, mProject.getBrand());
+						mPreparedStatement.setString(4, mProject.getLeader());
+						break;
+					case DELETE:
+						mPreparedStatement = mConnection.prepareStatement("DELETE FROM Project WHERE Pid=?");
+						mPreparedStatement.setString(1, mProject.getPid());
+						break;
+					default:
+						return false;
+					}							
+					mPreparedStatement.executeUpdate();
+					if(null != mStatementUpdate)
+						mStatementUpdate.executeUpdate();
+					
+					return true;
+				} catch (SQLException e) {
+					e.printStackTrace();
+					System.out.println(e.getMessage());
+				} 			
+		}
 		return false;
 	}
 	
