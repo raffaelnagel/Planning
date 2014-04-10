@@ -2,6 +2,8 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
+
 public class DatabaseConnection {
 	
 	private String URL;
@@ -38,21 +40,21 @@ public class DatabaseConnection {
     	}catch(Exception e){
     		System.out.println("Connection Error.");
     		e.printStackTrace();
-    		System.out.println(e.getMessage());
+    		System.out.println(e.getMessage());    		
     	}
     }	
 		
-	public List<User> getUsersFromDatabase(){
+	public List<People> getUsersFromDatabase(){
 		if(this.isConnected()){						
 			try {
 				Statement mStatement = mConnection.createStatement();			
 				ResultSet queryResult = mStatement.executeQuery("SELECT * FROM User");
 				
 				try {					
-					List<User> mListUser = new ArrayList<User>();
+					List<People> mListUser = new ArrayList<People>();
 					while(queryResult.next()){
 						
-						User mUser = new User();
+						People mUser = new People();
 						mUser.setId(queryResult.getString("id"));
 						mUser.setName(queryResult.getString("name"));
 						mUser.setLogin(queryResult.getString("login"));
@@ -71,17 +73,17 @@ public class DatabaseConnection {
 		return null;
 	}
 	
-	public List<User> getUsersFromDatabase(String Column, String Value){
+	public List<People> getUsersFromDatabase(String Column, String Value){
 		if(this.isConnected()){						
 			try {
 				Statement mStatement = mConnection.createStatement();			
 				ResultSet queryResult = mStatement.executeQuery("SELECT * FROM User WHERE " + Column + " = '" + Value + "'");
 				
 				try {					
-					List<User> mListUser = new ArrayList<User>();
+					List<People> mListUser = new ArrayList<People>();
 					while(queryResult.next()){
 						
-						User mUser = new User();
+						People mUser = new People();
 						mUser.setId(queryResult.getString("id"));
 						mUser.setName(queryResult.getString("name"));
 						mUser.setLogin(queryResult.getString("login"));
@@ -134,8 +136,8 @@ public class DatabaseConnection {
 	
 	public boolean LoginAlreadyExists(String login){
 		
-		List<User> mList = getUsersFromDatabase();
-		for(User u:mList){
+		List<People> mList = getUsersFromDatabase();
+		for(People u:mList){
 			if(u.getLogin().equals(login)) 
 				return true;
 		}
@@ -143,7 +145,7 @@ public class DatabaseConnection {
 		return false;
 	}
 	
-	public boolean updateUser(SqlCommand Cmd, User mUser){
+	public boolean updateUser(SqlCommand Cmd, People mUser){
 		if(this.isConnected()){
 			if(!LoginAlreadyExists(mUser.getLogin())){				
 				PreparedStatement mPreparedStatement;

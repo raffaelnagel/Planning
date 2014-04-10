@@ -1,4 +1,7 @@
 
+import javax.swing.JOptionPane;
+
+
 public class Planning {
 
 			
@@ -11,15 +14,19 @@ public class Planning {
 		DatabaseConnection mData = new DatabaseConnection(URL, login, pass);		
 		mData.openConnection();
 		
+		if(!mData.isConnected()){
+			JOptionPane.showMessageDialog(null, "Database Not Found.", "Error", JOptionPane.ERROR_MESSAGE);
+			return;
+		}
 		
 		
-		Login SystemLogin = new Login();
+		FrameLogin SystemLogin = new FrameLogin();
 		SystemLogin.Show();
 		boolean logged = SystemLogin.Log(mData);		
 		if(logged){
 		
 			FrameSearch newFrame = new FrameSearch();
-			newFrame.show();
+			newFrame.setVisible(true);
 		
 		}
 		

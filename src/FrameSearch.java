@@ -30,6 +30,7 @@ public class FrameSearch extends JFrame{
 	DefaultTableModel mModel = (DefaultTableModel) mTable.getModel();
 	JButton btnLoadData = new JButton("Load Data");
 	JButton btnInsertData = new JButton("Insert");
+	JButton btnDeleteData = new JButton("Delete");
 	JLabel lbName = new JLabel(), lbCategory = new JLabel(), lbBrand = new JLabel(), lbLeader = new JLabel();
 	JTextField tfName = new JTextField(30), tfCategory = new JTextField(10), tfBrand = new JTextField(12), tfLeader = new JTextField(11);
 	
@@ -81,7 +82,7 @@ public class FrameSearch extends JFrame{
 		mTable.setFillsViewportHeight(true);
 		
 		//button Load
-		btnLoadData.setPreferredSize(new Dimension(200,32));
+		btnLoadData.setPreferredSize(new Dimension(150,32));
 		btnLoadData.setVerticalTextPosition(AbstractButton.CENTER);
 		btnLoadData.setHorizontalTextPosition(AbstractButton.CENTER);
 		btnLoadData.addActionListener(new ActionListener(){
@@ -116,7 +117,7 @@ public class FrameSearch extends JFrame{
 		});
 		
 		//button Insert
-				btnInsertData.setPreferredSize(new Dimension(200,32));
+				btnInsertData.setPreferredSize(new Dimension(150,32));
 				btnInsertData.setVerticalTextPosition(AbstractButton.CENTER);
 				btnInsertData.setHorizontalTextPosition(AbstractButton.CENTER);
 				btnInsertData.addActionListener(new ActionListener(){
@@ -142,6 +143,41 @@ public class FrameSearch extends JFrame{
 				});
 		buttonPanel.add(btnLoadData, BorderLayout.EAST);	
 		buttonPanel.add(btnInsertData, BorderLayout.WEST);
+		
+		//button Delete
+		btnDeleteData.setPreferredSize(new Dimension(150,32));
+		btnDeleteData.setVerticalTextPosition(AbstractButton.CENTER);
+		btnDeleteData.setHorizontalTextPosition(AbstractButton.CENTER);
+		btnDeleteData.addActionListener(new ActionListener(){
+			public void actionPerformed(ActionEvent e){
+				String URL = "jdbc:mysql://localhost:3306/Planning";
+				String login = "root";
+				String pass = "root";
+
+				DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
+				mData.openConnection();
+				
+				int selectedRow = mTable.getSelectedRow();
+					
+				if(selectedRow > -1){
+					int option = JOptionPane.showConfirmDialog(getContentPane(), "Are you sure?");
+					
+					if(option == JOptionPane.YES_OPTION){
+						String pid = mTable.getValueAt(selectedRow, 0).toString();
+						Project newProject = new Project();
+						newProject.setPid(pid);
+						mData.updateProject(DatabaseConnection.SqlCommand.DELETE, newProject);
+						JOptionPane.showInternalMessageDialog(getContentPane(), "Project Deleted Successfuly.");
+					}
+				}
+				btnLoadData.doClick();
+			}
+		});
+		
+		
+		buttonPanel.add(btnDeleteData);	
+		buttonPanel.add(btnLoadData);	
+		buttonPanel.add(btnInsertData);
 		
 		//this.add(BorderLayout.NORTH, firstPanel);
 		this.add(BorderLayout.CENTER,mainPanel);
