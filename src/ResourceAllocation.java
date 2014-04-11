@@ -1,3 +1,10 @@
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
+
 
 public class ResourceAllocation {
 	
@@ -35,4 +42,111 @@ public class ResourceAllocation {
 		this.quantity = quantity;
 	}
 	
+	public List<ResourceAllocation> SelectResourceAllocation(DatabaseConnection mConnection, Project mProject){
+		
+		if(mConnection.isConnected()){
+			try{
+				Statement mStatement = mConnection.getConnection().createStatement();			
+				ResultSet queryResult = mStatement.executeQuery("SELECT * FROM ResourceAllocation WHERE idProject = '" + mProject.getId() + "'");
+				
+				try {					
+					List<ResourceAllocation> mListResourceAllocation = new ArrayList<ResourceAllocation>();
+					while(queryResult.next()){
+						
+						Resource newResource = new Resource();
+						newResource.setId(queryResult.getString("idResource"));						
+						
+						ResultSet queryResult1 = mStatement.executeQuery("SELECT * FROM Resource WHERE idResource = '" + newResource.getId() + "'");
+						newResource.setName(queryResult1.getString("Name"));						
+						newResource.setType(queryResult1.getString("Type"));
+						
+						ResourceAllocation mResourceAllocation = new ResourceAllocation(newResource, mProject, -1);
+						mResourceAllocation.setQuantity(queryResult.getFloat("Quantity"));
+						
+						mListResourceAllocation.add(mResourceAllocation);
+					}
+					return mListResourceAllocation;
+					
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}		
+			}catch (SQLException e) {				
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+	
+	public List<Resource> SelectResource(DatabaseConnection mConnection, Resource mResource){
+		
+		if(mConnection.isConnected()){
+			try{
+				Statement mStatement = mConnection.getConnection().createStatement();			
+				ResultSet queryResult = mStatement.executeQuery("SELECT * FROM Resource WHERE idResource = '" + mResource.getId() + "'");
+				
+				try {					
+					List<Resource> mListResource = new ArrayList<Resource>();
+					while(queryResult.next()){
+						
+						Resource newResource = new Resource();
+						newResource.setId(queryResult.getString("idResource"));
+						newResource.setName(queryResult.getString("Name"));
+						newResource.setType("Type");
+						mListResource.add(newResource);
+					}
+					return mListResource;
+					
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}		
+			}catch (SQLException e) {				
+				e.printStackTrace();
+			}
+		}
+		return null;
+	}
+	
+	public boolean InsertResource(DatabaseConnection mConnection, Resource mResource){
+		if(mConnection.isConnected()){			
+			try {
+				
+				PreparedStatement mPreparedStatement;
+				mPreparedStatement = mConnection.getConnection().prepareStatement("INSERT INTO Resource(Name, Type) VALUES(?,?)");
+				mPreparedStatement.setString(1, mResource.getName());
+				mPreparedStatement.setString(2, mResource.getType());
+				mPreparedStatement.executeUpdate();
+				
+				return true;
+			} catch (SQLException e) {
+				e.printStackTrace();
+				System.out.println(e.getMessage());
+			} 								
+				
+		}
+		return false;
+	}
+	
+	public boolean InsertResourceAllocation(DatabaseConnection mConnection, ResourceAllocation mResourceAllocation){
+		if(mConnection.isConnected()){			
+			try {
+				
+				Project mProject = mResourceAllocation.getProject();
+				Resource mResource = mResourceAllocation.getResource();
+				
+				PreparedStatement mPreparedStatement;
+				mPreparedStatement = mConnection.getConnection().prepareStatement("INSERT INTO ResourceAllocation(idProject, idResource, Quantity) VALUES(?,?,?)");
+				mPreparedStatement.setString(1, mProject.getId());
+				mPreparedStatement.setString(2, mResource.getId());
+				mPreparedStatement.setFloat(3, mResourceAllocation.getQuantity());
+				mPreparedStatement.executeUpdate();
+				
+				return true;
+			} catch (SQLException e) {
+				e.printStackTrace();
+				System.out.println(e.getMessage());
+			} 								
+				
+		}
+		return false;
+	}
 }

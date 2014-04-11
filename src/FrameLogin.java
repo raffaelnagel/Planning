@@ -10,8 +10,9 @@ import javax.swing.JTextField;
 
 public class FrameLogin {
 	
-	private String userLogin;
-	private String userPwd;
+	private Login newLogin = new Login();
+	private PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
+	private LoginSqlAdapter mLoginSqlAdapter = new LoginSqlAdapter();
 	
 	private JPanel panel = new JPanel();
 	private JLabel lbPassword = new JLabel("Password:");
@@ -33,17 +34,21 @@ public class FrameLogin {
 	
 	public boolean Log(DatabaseConnection mDataConnection){
 		
-		setUserLogin(txtLogin.getText());
-		setUserPwd(new String(passw.getPassword()));
+		newLogin.setUser(txtLogin.getText());
+		newLogin.setPassword(new String(passw.getPassword()));
 		
 		boolean userFound = false;
 		
-		List<People> listUsers = mDataConnection.getUsersFromDatabase();
-		
-		for(People u:listUsers){
-			if(u.getLogin().equals(userLogin)){
+		List<People> mListPeople = mPeopleSqlAdapter.SelectPeople(mDataConnection);
+			
+		Login pLogin = new Login();
+		for(People p:mListPeople){
+			
+			pLogin = mLoginSqlAdapter.SelectLogin(mDataConnection, p);
+			
+			if(pLogin.getUser().equals(newLogin.getUser())){
 				userFound = true;
-				if(u.getPassword().equals(userPwd)){
+				if(pLogin.getPassword().equals(newLogin.getPassword())){
 					JOptionPane.showMessageDialog(null,"Access Granted.");
 					return true;
 				}else{
@@ -52,26 +57,12 @@ public class FrameLogin {
 			}
 		}
 		
-		setUserPwd("");
+		newLogin = null;
+		
 		if(!userFound)
 			JOptionPane.showMessageDialog(null,"Invalid User Name");
 		
 		return false;
 	}
 
-	public String getUserLogin() {
-		return userLogin;
-	}
-
-	public void setUserLogin(String userLogin) {
-		this.userLogin = userLogin;
-	}
-
-	public String getUserPwd() {
-		return userPwd;
-	}
-
-	public void setUserPwd(String userPwd) {
-		this.userPwd = userPwd;
-	}
 }

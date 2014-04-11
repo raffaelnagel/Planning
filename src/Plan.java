@@ -1,30 +1,32 @@
+import java.sql.Timestamp;
+
 
 public class Plan {
 	
-	private int idPlan;
+	private String id;
 	private Project project;
-	private String date;
+	private Timestamp date;
 	private String actionPlan;
 	
-	public Plan(Project project, String date, String actionPlan){
+	public Plan(Project project, Timestamp date, String actionPlan){
 		this.setProject(project);
 		this.setDate(date);
 		this.setActionPlan(actionPlan);
 	}
 	
-	public int getIdPlan() {
-		return idPlan;
+	public String getId() {
+		return id;
 	}
 	
-	public void setIdPlan(int idPlan) {
-		this.idPlan = idPlan;
+	public void setId(String id) {
+		this.id = id;
 	}
 	
-	public String getDate() {
+	public Timestamp getDate() {
 		return date;
 	}
 	
-	public void setDate(String date) {
+	public void setDate(Timestamp date) {
 		this.date = date;
 	}
 	

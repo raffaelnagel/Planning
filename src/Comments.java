@@ -1,23 +1,25 @@
+import java.sql.Timestamp;
+
 
 public class Comments {
 	
-	private int idComments;
+	private String id;
 	private Project project;
-	private String date;
+	private Timestamp date;
 	private String comment;
 	
-	public Comments(Project project, String date, String comment){
+	public Comments(Project project, Timestamp date, String comment){
 		this.setProject(project);
 		this.setDate(date);
 		this.setComment(comment);
 	}
 	
-	public int getIdComments() {
-		return idComments;
+	public String getId() {
+		return id;
 	}
 	
-	public void setIdComments(int idComments) {
-		this.idComments = idComments;
+	public void setId(String id) {
+		this.id = id;
 	}
 	
 	public Project getProject() {
@@ -28,11 +30,11 @@ public class Comments {
 		this.project = project;
 	}
 	
-	public String getDate() {
+	public Timestamp getDate() {
 		return date;
 	}
 	
-	public void setDate(String date) {
+	public void setDate(Timestamp date) {
 		this.date = date;
 	}
 	

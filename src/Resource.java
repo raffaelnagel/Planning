@@ -1,7 +1,7 @@
 
 public class Resource {
 	
-	private int idResource;
+	private String id;
 	private String name;
 	private String type;
 	
@@ -22,12 +22,12 @@ public class Resource {
 		this.name = name;
 	}
 
-	public int getIdResource() {
-		return idResource;
+	public String getId() {
+		return id;
 	}
 
-	public void setIdResource(int idResource) {
-		this.idResource = idResource;
+	public void setId(String id) {
+		this.id = id;
 	}
 
 	public String getType() {

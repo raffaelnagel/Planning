@@ -18,9 +18,15 @@ CREATE TABLE IF NOT EXISTS `Planning`.`Login` (
   `idPeople` INT NOT NULL,
   `User` VARCHAR(45) NULL,
   `Password` VARCHAR(45) NULL,
-  `PermittionLevel` VARCHAR(45) NULL,
+  `PermissionLevel` INT NULL,
   PRIMARY KEY (`idPeople`),
-  UNIQUE INDEX `User_UNIQUE` (`User` ASC))
+  UNIQUE INDEX `User_UNIQUE` (`User` ASC),
+  UNIQUE INDEX `idPeople_UNIQUE` (`idPeople` ASC),
+  CONSTRAINT `fk_People_Login1`
+    FOREIGN KEY (`idPeople`)
+    REFERENCES `Planning`.`People` (`idPeople`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
@@ -33,12 +39,7 @@ CREATE TABLE IF NOT EXISTS `Planning`.`People` (
   `Code` CHAR(3) NULL,
   UNIQUE INDEX `Code_UNIQUE` (`Code` ASC),
   PRIMARY KEY (`idPeople`),
-  UNIQUE INDEX `idPeople_UNIQUE` (`idPeople` ASC),
-  CONSTRAINT `fk_People_Login1`
-    FOREIGN KEY (`idPeople`)
-    REFERENCES `Planning`.`Login` (`idPeople`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION)
+  UNIQUE INDEX `idPeople_UNIQUE` (`idPeople` ASC))
 ENGINE = InnoDB;
 
 

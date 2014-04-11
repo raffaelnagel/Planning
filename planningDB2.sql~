@@ -20,7 +20,13 @@ CREATE TABLE IF NOT EXISTS `Planning`.`Login` (
   `Password` VARCHAR(45) NULL,
   `PermittionLevel` VARCHAR(45) NULL,
   PRIMARY KEY (`idPeople`),
-  UNIQUE INDEX `User_UNIQUE` (`User` ASC))
+  UNIQUE INDEX `User_UNIQUE` (`User` ASC),
+  UNIQUE INDEX `idPeople_UNIQUE` (`idPeople` ASC),
+  CONSTRAINT `fk_People_Login1`
+    FOREIGN KEY (`idPeople`)
+    REFERENCES `Planning`.`People` (`idPeople`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
 
@@ -33,12 +39,7 @@ CREATE TABLE IF NOT EXISTS `Planning`.`People` (
   `Code` CHAR(3) NULL,
   UNIQUE INDEX `Code_UNIQUE` (`Code` ASC),
   PRIMARY KEY (`idPeople`),
-  UNIQUE INDEX `idPeople_UNIQUE` (`idPeople` ASC),
-  CONSTRAINT `fk_People_Login1`
-    FOREIGN KEY (`idPeople`)
-    REFERENCES `Planning`.`Login` (`idPeople`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION)
+  UNIQUE INDEX `idPeople_UNIQUE` (`idPeople` ASC))
 ENGINE = InnoDB;
 
 
@@ -227,6 +228,7 @@ INSERT INTO Comments(idProject, Date, Comment) VALUES(2, NOW(), 'unique comment 
 -- join
 SELECT * FROM People JOIN Team ON People.idPeople = Team.idPeople JOIN Project ON Team.idProject = Project.idProject;
 
+SELECT Name, Plan.Date, Plan.ActionPlan, Comments.Comment FROM Project JOIN Plan ON Project.idProject = Plan.idProject JOIN Comments ON Project.idProject = Comments.idProject;
 
 
 

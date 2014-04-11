@@ -19,15 +19,20 @@ public class Planning {
 			return;
 		}
 		
+		System.out.println("---Teste Classes---");
+		
+	
+		
+		System.out.println("---Fim dos teste---");
 		
 		FrameLogin SystemLogin = new FrameLogin();
 		SystemLogin.Show();
 		boolean logged = SystemLogin.Log(mData);		
 		if(logged){
-		
-			FrameSearch newFrame = new FrameSearch();
-			newFrame.setVisible(true);
-		
+			System.out.println("Logged");
+			//FrameSearch newFrame = new FrameSearch();
+			//newFrame.setVisible(true);
+			
 		}
 		
 		mData.closeConnection();		

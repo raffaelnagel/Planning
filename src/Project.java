@@ -1,3 +1,5 @@
+import java.sql.Timestamp;
+
 
 public class Project {
 
@@ -10,9 +12,9 @@ public class Project {
 	private String endMarket;
 	private String complexity;
 	private String approval;
-	private String start;
-	private String finish;
-	private String Date;
+	private Timestamp start;
+	private Timestamp finish;
+	private Timestamp Date;
 	
 	
 	public String getId() {
@@ -87,27 +89,27 @@ public class Project {
 		this.approval = approval;
 	}
 
-	public String getStart() {
+	public Timestamp getStart() {
 		return start;
 	}
 
-	public void setStart(String start) {
+	public void setStart(Timestamp start) {
 		this.start = start;
 	}
 
-	public String getFinish() {
+	public Timestamp getFinish() {
 		return finish;
 	}
 
-	public void setFinish(String finish) {
+	public void setFinish(Timestamp finish) {
 		this.finish = finish;
 	}
 
-	public String getDate() {
+	public Timestamp getDate() {
 		return Date;
 	}
 
-	public void setDate(String date) {
+	public void setDate(Timestamp date) {
 		Date = date;
 	}
 
