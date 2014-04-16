@@ -86,14 +86,22 @@ public class Team {
 				Project mProject = mTeam.getProject();
 				People mPeople = mTeam.getPeople();
 				
-				PreparedStatement mPreparedStatement;
-				mPreparedStatement = mConnection.getConnection().prepareStatement("INSERT INTO Team(idProject, idPeople, Responsability) VALUES(?,?,?)");
-				mPreparedStatement.setString(1, mProject.getId());
-				mPreparedStatement.setString(2, mPeople.getId());
-				mPreparedStatement.setString(3, mTeam.getResponsability());
-				mPreparedStatement.executeUpdate();
+				ProjectSqlAdapter mProjectSqlAdapter = new ProjectSqlAdapter();
+				PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
 				
-				return true;
+				if(mProjectSqlAdapter.Exists(mConnection, mProject) & mPeopleSqlAdapter.Exists(mConnection, mPeople)){
+				
+					PreparedStatement mPreparedStatement;
+					mPreparedStatement = mConnection.getConnection().prepareStatement("INSERT INTO Team(idProject, idPeople, Responsability) VALUES(?,?,?)");
+					mPreparedStatement.setString(1, mProject.getId());
+					mPreparedStatement.setString(2, mPeople.getId());
+					mPreparedStatement.setString(3, mTeam.getResponsability());
+					mPreparedStatement.executeUpdate();
+					
+					return true;
+				}else{
+					return false;
+				}
 			} catch (SQLException e) {
 				e.printStackTrace();
 				System.out.println(e.getMessage());

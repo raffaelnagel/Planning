@@ -56,14 +56,17 @@ public class ResourceAllocation {
 						Resource newResource = new Resource();
 						newResource.setId(queryResult.getString("idResource"));						
 						
-						ResultSet queryResult1 = mStatement.executeQuery("SELECT * FROM Resource WHERE idResource = '" + newResource.getId() + "'");
-						newResource.setName(queryResult1.getString("Name"));						
-						newResource.setType(queryResult1.getString("Type"));
-						
+						Statement mStatement1 = mConnection.getConnection().createStatement();		
+						ResultSet queryResult1 = mStatement1.executeQuery("SELECT * FROM Resource WHERE idResource = '" + newResource.getId() + "'");
+						if(queryResult1.next()){
+							newResource.setName(queryResult1.getString("Name"));						
+							newResource.setType(queryResult1.getString("Type"));
+						}	
 						ResourceAllocation mResourceAllocation = new ResourceAllocation(newResource, mProject, -1);
 						mResourceAllocation.setQuantity(queryResult.getFloat("Quantity"));
 						
 						mListResourceAllocation.add(mResourceAllocation);
+					
 					}
 					return mListResourceAllocation;
 					
@@ -82,7 +85,7 @@ public class ResourceAllocation {
 		if(mConnection.isConnected()){
 			try{
 				Statement mStatement = mConnection.getConnection().createStatement();			
-				ResultSet queryResult = mStatement.executeQuery("SELECT * FROM Resource WHERE idResource = '" + mResource.getId() + "'");
+				ResultSet queryResult = mStatement.executeQuery("SELECT * FROM Resource WHERE Name = '" + mResource.getName() + "'");
 				
 				try {					
 					List<Resource> mListResource = new ArrayList<Resource>();

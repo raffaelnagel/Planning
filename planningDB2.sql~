@@ -18,7 +18,7 @@ CREATE TABLE IF NOT EXISTS `Planning`.`Login` (
   `idPeople` INT NOT NULL,
   `User` VARCHAR(45) NULL,
   `Password` VARCHAR(45) NULL,
-  `PermittionLevel` VARCHAR(45) NULL,
+  `PermissionLevel` INT NULL,
   PRIMARY KEY (`idPeople`),
   UNIQUE INDEX `User_UNIQUE` (`User` ASC),
   UNIQUE INDEX `idPeople_UNIQUE` (`idPeople` ASC),
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS `Planning`.`Plan` (
   CONSTRAINT `fk_Plan_Project1`
     FOREIGN KEY (`idProject`)
     REFERENCES `Planning`.`Project` (`idProject`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -151,7 +151,7 @@ CREATE TABLE IF NOT EXISTS `Planning`.`Comments` (
   CONSTRAINT `fk_Comments_Project1`
     FOREIGN KEY (`idProject`)
     REFERENCES `Planning`.`Project` (`idProject`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 

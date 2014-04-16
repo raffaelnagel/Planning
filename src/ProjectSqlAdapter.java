@@ -2,6 +2,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +29,7 @@ public class ProjectSqlAdapter {
 						mProject.setOpco(queryResult.getString("OpCo"));
 						mProject.setEndMarket(queryResult.getString("EndMarket"));
 						mProject.setComplexity(queryResult.getString("Complexity"));
-						mProject.setApproval(queryResult.getString("Approval"));
+						mProject.setApproval(queryResult.getBoolean("Approval"));
 						mProject.setStart(queryResult.getTimestamp("Start"));
 						mProject.setFinish(queryResult.getTimestamp("Finish"));
 						mProject.setDate(queryResult.getTimestamp("Date"));
@@ -67,7 +68,7 @@ public class ProjectSqlAdapter {
 						mProject.setOpco(queryResult.getString("OpCo"));
 						mProject.setEndMarket(queryResult.getString("EndMarket"));
 						mProject.setComplexity(queryResult.getString("Complexity"));
-						mProject.setApproval(queryResult.getString("Approval"));
+						mProject.setApproval(queryResult.getBoolean("Approval"));
 						mProject.setStart(queryResult.getTimestamp("Start"));
 						mProject.setFinish(queryResult.getTimestamp("Finish"));
 						mProject.setDate(queryResult.getTimestamp("Date"));
@@ -93,20 +94,21 @@ public class ProjectSqlAdapter {
 				PreparedStatement mPreparedStatement;
 				mPreparedStatement = mConnection.getConnection().prepareStatement("INSERT INTO Project(Name, Category, Brand, OpCo, EndMarket, Complexity, Approval, Start, Finish, Date) VALUES(?,?,?,?,?,?,?,?,?,?)");
 				mPreparedStatement.setString(1, mProject.getName());
-				mPreparedStatement.setString(1, mProject.getCategory());
-				mPreparedStatement.setString(1, mProject.getBrand());
-				mPreparedStatement.setString(1, mProject.getOpco());
-				mPreparedStatement.setString(1, mProject.getEndMarket());
-				mPreparedStatement.setString(1, mProject.getComplexity());
-				mPreparedStatement.setString(1, mProject.getApproval());
-				mPreparedStatement.setTimestamp(1, mProject.getStart());
-				mPreparedStatement.setTimestamp(1, mProject.getFinish());
-				mPreparedStatement.setString(1, "NOW()");
+				mPreparedStatement.setString(2, mProject.getCategory());
+				mPreparedStatement.setString(3, mProject.getBrand());
+				mPreparedStatement.setString(4, mProject.getOpco());
+				mPreparedStatement.setString(5, mProject.getEndMarket());
+				mPreparedStatement.setString(6, mProject.getComplexity());
+				mPreparedStatement.setBoolean(7, mProject.getApproval());
+				mPreparedStatement.setTimestamp(8, mProject.getStart());
+				mPreparedStatement.setTimestamp(9, mProject.getFinish());
+				java.util.Date date = new java.util.Date();
+				mPreparedStatement.setTimestamp(10, new Timestamp(date.getTime()));
 				
 				mPreparedStatement.executeUpdate();
 				
-				mPreparedStatement = mConnection.getConnection().prepareStatement("UPDATE Project SET ProjectCode = CONCAT(Date, '_', idProject) WHERE idProject is NULL");
-				
+				mPreparedStatement = mConnection.getConnection().prepareStatement("UPDATE Project SET ProjectCode = CONCAT(Year(Date), '_', idProject) WHERE ProjectCode is NULL");
+		
 				mPreparedStatement.executeUpdate();
 				
 				return true;
@@ -188,7 +190,7 @@ public class ProjectSqlAdapter {
 					mPreparedStatement.executeUpdate();
 					
 					mPreparedStatement = mConnection.getConnection().prepareStatement("UPDATE Project SET Approval = ? WHERE idProject = ?");
-					mPreparedStatement.setString(1, mProject.getApproval());
+					mPreparedStatement.setBoolean(1, mProject.getApproval());
 					mPreparedStatement.setString(2, mProject.getId());
 					mPreparedStatement.executeUpdate();
 					

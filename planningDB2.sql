@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS `Planning`.`Plan` (
   CONSTRAINT `fk_Plan_Project1`
     FOREIGN KEY (`idProject`)
     REFERENCES `Planning`.`Project` (`idProject`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -151,7 +151,7 @@ CREATE TABLE IF NOT EXISTS `Planning`.`Comments` (
   CONSTRAINT `fk_Comments_Project1`
     FOREIGN KEY (`idProject`)
     REFERENCES `Planning`.`Project` (`idProject`)
-    ON DELETE NO ACTION
+    ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
@@ -175,13 +175,13 @@ INSERT INTO People(Name, Code) VALUES('Luciana Castro', 'LAC');
 INSERT INTO People(Name, Code) VALUES('Estefani Silveira', 'ETS');
 INSERT INTO People(Name, Code) VALUES('Luciana Brasil', 'LCB');
 
-INSERT INTO Login(idPeople, User, Password, PermittionLevel) VALUES(1, 'admin', 'admin', 0);
-INSERT INTO Login(idPeople, User, Password, PermittionLevel) VALUES(2, 'jojo', '12345', 1);
-INSERT INTO Login(idPeople, User, Password, PermittionLevel) VALUES(3, 'user1', '12345', 1);
-INSERT INTO Login(idPeople, User, Password, PermittionLevel) VALUES(4, 'user2', '12345', 1);
-INSERT INTO Login(idPeople, User, Password, PermittionLevel) VALUES(5, 'user3', '12345', 1);
-INSERT INTO Login(idPeople, User, Password, PermittionLevel) VALUES(6, 'user4', '12345', 1);
-INSERT INTO Login(idPeople, User, Password, PermittionLevel) VALUES(7, 'user5', '12345', 1);
+INSERT INTO Login(idPeople, User, Password, PermissionLevel) VALUES(1, 'admin', 'admin', 0);
+INSERT INTO Login(idPeople, User, Password, PermissionLevel) VALUES(2, 'jojo', '12345', 1);
+INSERT INTO Login(idPeople, User, Password, PermissionLevel) VALUES(3, 'user1', '12345', 1);
+INSERT INTO Login(idPeople, User, Password, PermissionLevel) VALUES(4, 'user2', '12345', 1);
+INSERT INTO Login(idPeople, User, Password, PermissionLevel) VALUES(5, 'user3', '12345', 1);
+INSERT INTO Login(idPeople, User, Password, PermissionLevel) VALUES(6, 'user4', '12345', 1);
+INSERT INTO Login(idPeople, User, Password, PermissionLevel) VALUES(7, 'user5', '12345', 1);
 
 SELECT * FROM People JOIN Login ON People.idPeople = Login.idPeople;
 

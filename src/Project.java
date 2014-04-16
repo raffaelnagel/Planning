@@ -11,7 +11,7 @@ public class Project {
 	private String opco;
 	private String endMarket;
 	private String complexity;
-	private String approval;
+	private boolean approval;
 	private Timestamp start;
 	private Timestamp finish;
 	private Timestamp Date;
@@ -81,11 +81,11 @@ public class Project {
 		this.complexity = complexity;
 	}
 
-	public String getApproval() {
+	public boolean getApproval() {
 		return approval;
 	}
 
-	public void setApproval(String approval) {
+	public void setApproval(boolean approval) {
 		this.approval = approval;
 	}
 
