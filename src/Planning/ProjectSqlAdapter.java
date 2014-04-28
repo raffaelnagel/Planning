@@ -127,8 +127,8 @@ public class ProjectSqlAdapter {
 			try {
 				
 				PreparedStatement mPreparedStatement;
-				mPreparedStatement = mConnection.getConnection().prepareStatement("DELETE FROM Project WHERE idProject = ?");
-				mPreparedStatement.setString(1, mProject.getId());
+				mPreparedStatement = mConnection.getConnection().prepareStatement("DELETE FROM Project WHERE ProjectCode = ?");
+				mPreparedStatement.setString(1, mProject.getProjectCode());
 				mPreparedStatement.executeUpdate();
 				
 				return true;

@@ -23,18 +23,24 @@ public class FrameMain extends JFrame{
 	JLabel lbUserPermission = new JLabel();
 	JPanel panel = new JPanel();
 	
-	private JMenuBar Menu = new JMenuBar();;  
-	private JMenu menuProject = new JMenu();
+	private JMenuBar Menu = new JMenuBar();	
 	private JMenu menuFile = new JMenu();
+	//Menu Project
+	private JMenu menuProject = new JMenu();
 	private JMenuItem menuNewProject = new JMenuItem();
 	private JMenuItem menuListProject = new JMenuItem(); 
+	//Menu People
+	private JMenu menuPeople = new JMenu();
+	private JMenuItem menuNewPeople = new JMenuItem();
+	private JMenuItem menuListPeople = new JMenuItem();
 	
+	//Menu File
 	private JMenuItem menuClose = new JMenuItem(); 
 	private JMenuItem menuMain = new JMenuItem(); 
 	
 	public FrameMain(int permissionLevel){
 		
-		setSize(610,600);		
+		setSize(940,680);		
 		setTitle("Planning System");
 		setLocationRelativeTo(null);		
 		//setResizable(false);
@@ -42,9 +48,19 @@ public class FrameMain extends JFrame{
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
 		this.setVisible(true);		
 		
-		//MENU
+		//MENU Project
 		menuNewProject.setText("New Project");
-		menuListProject.setText("Project's List");
+		menuNewProject.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+                getContentPane().removeAll();
+                PanelProjectNew fmNewProject = new PanelProjectNew();
+                getContentPane().add(fmNewProject);
+                getContentPane().validate();
+                getContentPane().repaint();
+            }
+        });
+		menuListProject.setText("Projects List");
 		menuListProject.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
@@ -55,7 +71,18 @@ public class FrameMain extends JFrame{
                 getContentPane().repaint();
             }
         });
+		menuProject.setText("Project");
+		menuProject.add(menuNewProject);
+		menuProject.add(menuListProject);
+			
+		//Menu People
+		menuNewPeople.setText("New Employer");
+		menuListPeople.setText("Employers List");
+		menuPeople.setText("Employer");
+		menuPeople.add(menuNewPeople);
+		menuPeople.add(menuListPeople);
 		
+		//Menu File
 		menuMain.setText("Home");
 		menuMain.addActionListener(new ActionListener() {
             @Override
@@ -72,20 +99,18 @@ public class FrameMain extends JFrame{
             public void actionPerformed(ActionEvent event) {
                 System.exit(0);
             }
-        });
-		
-		menuProject.setText("Project");
-		menuProject.add(menuNewProject);
-		menuProject.add(menuListProject);
-		
-		
+        });		
 		menuFile.setText("File");
 		menuFile.add(menuMain);
 		menuFile.addSeparator();
 		menuFile.add(menuClose);
 		
+		
+		//Menu Toolbar
 		Menu.add(menuFile); 
-		Menu.add(menuProject);		
+		Menu.add(menuProject);	
+		Menu.add(menuPeople);	
+		
 		this.setJMenuBar(Menu); 
 		
 		//-----PANEL----------------------------------------------
