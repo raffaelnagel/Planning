@@ -26,14 +26,21 @@ public class Planning {
 		
 		FrameLogin SystemLogin = new FrameLogin();
 		SystemLogin.Show();
-		int userPermission = SystemLogin.Log(mData);		
-		if(userPermission > -1){
-			System.out.println(userPermission);
+		try{
+			People loggedUser = new People();
+			loggedUser = SystemLogin.Log(mData);
 			
 			
-			FrameMain mainFrame = new FrameMain(userPermission);
-			mainFrame.setVisible(true);
+			if(loggedUser != null){
+				System.out.println(loggedUser.getLogin().getPermissionLevel());
 				
+				
+				FrameMain mainFrame = new FrameMain(loggedUser);
+				mainFrame.setVisible(true);
+					
+			}
+		}catch(Exception e){			
+			//loggin failed
 		}
 		
 		mData.closeConnection();		

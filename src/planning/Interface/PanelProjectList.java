@@ -11,7 +11,9 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -25,6 +27,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 
 import planning.Planning.DatabaseConnection;
+import planning.Planning.People;
 import planning.Planning.Project;
 import planning.Planning.ProjectSqlAdapter;
 
@@ -41,17 +44,14 @@ public class PanelProjectList extends JPanel{
 			 }
 			};
 	DefaultTableModel mModel = (DefaultTableModel) mTable.getModel();
-	JButton btnLoadData = new JButton("Refresh");
-	JButton btnDeleteData = new JButton("Delete");
-	JButton btnSearch = new JButton("Search");
+	JButton btnLoadData = new JButton("");
+	JButton btnDeleteData = new JButton("");
+	JButton btnSearch = new JButton("");
 	JLabel lbName = new JLabel(), lbCategory = new JLabel(), lbBrand = new JLabel(), lbEndMarket = new JLabel(), lbOpCo = new JLabel(), lbComplexity = new JLabel(), lbApproval = new JLabel(), lbStart = new JLabel(), lbFinish = new JLabel(), lbDate = new JLabel();
-	JTextField tfName = new JTextField(30), tfCategory = new JTextField(10), tfBrand = new JTextField(12), tfEndMarket = new JTextField(11), tfOpCo = new JTextField(11), tfComplexity = new JTextField(15), tfApproval = new JTextField(11), tfStart = new JTextField(15), tfFinish = new JTextField(15), tfDate = new JTextField(11);
+	JTextField tfName = new JTextField(30), tfBrand = new JTextField(12), tfEndMarket = new JTextField(11), tfOpCo = new JTextField(11), tfApproval = new JTextField(11), tfStart = new JTextField(15), tfFinish = new JTextField(15), tfDate = new JTextField(11);
+	JComboBox cbCategory = new JComboBox(Project.ProjectCategory.values()), cbComplexity = new JComboBox(new String[] {"","Cap1","Cap2","Cap3"});
 	
-		
-	public PanelProjectList(){
-		
-		
-		//this.setLayout(new FlowLayout());		
+	public PanelProjectList(final People loggedUser){
 		
 		this.setVisible(true);
 		
@@ -61,18 +61,25 @@ public class PanelProjectList extends JPanel{
 		JScrollPane scrollPane = new JScrollPane(mTable);
 		scrollPane.getViewport().setScrollMode(JViewport.SIMPLE_SCROLL_MODE);
 		
-		//this.setBackground(Color.blue);
 		//
 		lbName.setText("Name: ");
 		lbCategory.setText(" Category: ");
 		lbBrand.setText("Brand: ");
 		lbEndMarket.setText(" End Market: ");
 		lbOpCo.setText(" OpCo: ");
-		lbComplexity.setText("Complexity: ");
+		lbComplexity.setText("Complexity: ");		
 		lbApproval.setText(" Approval: ");
 		lbStart.setText(" Start Date: ");
-		lbFinish.setText(" Finish Date: ");
+		lbFinish.setText("Finish Date: ");
 		lbDate.setText(" Created On: ");
+		
+		cbCategory.insertItemAt("", 0);
+		cbCategory.setSelectedIndex(0);
+		cbCategory.setPreferredSize(new Dimension(50,18));
+		cbComplexity.setPreferredSize(new Dimension(50,18));
+		cbCategory.setBackground(Color.white);		
+		cbComplexity.setBackground(Color.white);
+		
 		
 		GridBagConstraints c = new GridBagConstraints();
 		c.ipadx = 15;
@@ -89,7 +96,7 @@ public class PanelProjectList extends JPanel{
 		InputPanel.add(lbCategory,c);
 		c.gridx = 4;
 		c.gridwidth = 2;
-		InputPanel.add(tfCategory,c);
+		InputPanel.add(cbCategory,c);
 		c.gridwidth = 1;
 		c.gridx = 5;			
 		
@@ -112,8 +119,8 @@ public class PanelProjectList extends JPanel{
 		c.gridy = 2;
 		c.gridx = 0;
 		InputPanel.add(lbComplexity,c);
-		c.gridx = 1;
-		InputPanel.add(tfComplexity,c);
+		c.gridx = 1;		
+		InputPanel.add(cbComplexity,c);
 		c.gridx = 2;
 		InputPanel.add(lbApproval,c);
 		c.gridx = 3;
@@ -173,9 +180,14 @@ public class PanelProjectList extends JPanel{
 		mTable.setAutoCreateRowSorter(true);
 		
 		//button Load
-		btnLoadData.setPreferredSize(new Dimension(150,32));
+		btnLoadData.setPreferredSize(new Dimension(150,50));
 		btnLoadData.setVerticalTextPosition(SwingConstants.CENTER);
 		btnLoadData.setHorizontalTextPosition(SwingConstants.CENTER);
+		ImageIcon imgLoad = new ImageIcon(getClass().getClassLoader().getResource("resources/btnRefresh.png"));
+		btnLoadData.setBorder(BorderFactory.createEmptyBorder());
+		btnLoadData.setContentAreaFilled(false);
+		btnLoadData.setIcon(imgLoad);
+		
 		btnLoadData.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
@@ -186,7 +198,13 @@ public class PanelProjectList extends JPanel{
 				DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
 				mData.openConnection();
 				ProjectSqlAdapter mProjectSqlAdapter = new ProjectSqlAdapter();
-				List<Project> mListProject = mProjectSqlAdapter.SelectProject(mData);
+				
+				List<Project> mListProject;
+				if(loggedUser.getLogin().getPermissionLevel() > 0){
+					mListProject = mProjectSqlAdapter.SelectProject(mData, loggedUser);
+				}else{
+					mListProject = mProjectSqlAdapter.SelectProject(mData);
+				}
 
 				for(int row = mModel.getRowCount() - 1; row >= 0 ; row--)
 					mModel.removeRow(row);
@@ -210,7 +228,7 @@ public class PanelProjectList extends JPanel{
 					column++;
 					mTable.setValueAt(p.getComplexity(), line, column);
 					column++;
-					mTable.setValueAt(p.getApproval(), line, column);
+					mTable.setValueAt(p.isApproval(), line, column);
 					column++;
 					mTable.setValueAt(p.getStart(), line, column);
 					column++;
@@ -225,9 +243,13 @@ public class PanelProjectList extends JPanel{
 		
 				
 		//button Delete
-		btnDeleteData.setPreferredSize(new Dimension(150,32));
+		btnDeleteData.setPreferredSize(new Dimension(150,50));
 		btnDeleteData.setVerticalTextPosition(SwingConstants.CENTER);
 		btnDeleteData.setHorizontalTextPosition(SwingConstants.CENTER);
+		ImageIcon imgDelete = new ImageIcon(getClass().getClassLoader().getResource("resources/btnDelete.png"));
+		btnDeleteData.setIcon(imgDelete);
+		btnDeleteData.setBorder(BorderFactory.createEmptyBorder());
+		btnDeleteData.setContentAreaFilled(false);
 		btnDeleteData.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
@@ -261,9 +283,13 @@ public class PanelProjectList extends JPanel{
 		});
 		
 		//button Search
-		btnSearch.setPreferredSize(new Dimension(150,32));
+		btnSearch.setPreferredSize(new Dimension(150,50));
 		btnSearch.setVerticalTextPosition(SwingConstants.CENTER);
 		btnSearch.setHorizontalTextPosition(SwingConstants.CENTER);
+		ImageIcon imgSearch = new ImageIcon(getClass().getClassLoader().getResource("resources/btnSearch.png"));
+		btnSearch.setIcon(imgSearch);
+		btnSearch.setBorder(BorderFactory.createEmptyBorder());
+		btnSearch.setContentAreaFilled(false);
 		btnSearch.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
@@ -285,11 +311,11 @@ public class PanelProjectList extends JPanel{
 			    {  
 			        Project value = i.next();  
 			        if( tfName.getText().length() > 0 && value.getName() == null) i.remove();
-			        if( tfCategory.getText().length() > 0 && value.getCategory() == null) i.remove();
+			        if( cbCategory.getSelectedItem().toString().length() > 0 && value.getCategory() == null) i.remove();
 			        if( tfBrand.getText().length() > 0 && value.getBrand() == null) i.remove();
 			        if( tfOpCo.getText().length() > 0 && value.getOpco() == null) i.remove();
 			        if( tfEndMarket.getText().length() > 0 && value.getEndMarket() == null) i.remove();
-			        if( tfComplexity.getText().length() > 0 && value.getComplexity() == null) i.remove();			        
+			        if( cbComplexity.getSelectedItem().toString().length() > 0 && value.getComplexity() == null) i.remove();			        
 			        if( tfStart.getText().length() > 0 && value.getStart() == null) i.remove();
 			        if( tfFinish.getText().length() > 0 && value.getFinish() == null) i.remove();
 			        if( tfDate.getText().length() > 0 && value.getDate() == null) i.remove();			        
@@ -299,8 +325,8 @@ public class PanelProjectList extends JPanel{
 			        	if( value.getName().contains(tfName.getText()) == false)
 			            	i.remove(); 
 			        } 
-			        if( tfCategory.getText().length() > 0 && value.getCategory() != null){ 
-			        	if(value.getCategory().contains(tfCategory.getText()) == false)
+			        if( cbCategory.getSelectedItem().toString().length() > 0 && value.getCategory() != null){ 
+			        	if(value.getCategory().toString().contains(cbCategory.getSelectedItem().toString()) == false)
 			        		i.remove(); 
 			        }  
 			        if( tfBrand.getText().length() > 0 && value.getBrand() != null){
@@ -315,12 +341,12 @@ public class PanelProjectList extends JPanel{
 			        	if(value.getEndMarket().contains(tfEndMarket.getText()) == false)
 			        		i.remove(); 
 			        } 
-			        if( tfComplexity.getText().length() > 0 && value.getComplexity() != null){
-			        	if(Integer.parseInt(value.getComplexity()) != Integer.parseInt(tfComplexity.getText()))
+			        if( cbComplexity.getSelectedItem().toString().length() > 0 && value.getComplexity() != null){
+			        	if(Integer.parseInt(value.getComplexity()) != Integer.parseInt(cbComplexity.getSelectedItem().toString()))
 			        		i.remove(); 
 			        } 
 			        if( tfApproval.getText().length() > 0){
-			        	if(value.getApproval() != Boolean.parseBoolean(tfApproval.getText()))
+			        	if(value.isApproval() != Boolean.parseBoolean(tfApproval.getText()))
 			        		i.remove(); 
 			        } 
 			        if( tfStart.getText().length() > 0 && value.getStart() != null){
@@ -356,7 +382,7 @@ public class PanelProjectList extends JPanel{
 					column++;
 					mTable.setValueAt(p.getComplexity(), line, column);
 					column++;
-					mTable.setValueAt(p.getApproval(), line, column);
+					mTable.setValueAt(p.isApproval(), line, column);
 					column++;
 					mTable.setValueAt(p.getStart(), line, column);
 					column++;

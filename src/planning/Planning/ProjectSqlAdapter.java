@@ -25,7 +25,11 @@ public class ProjectSqlAdapter {
 						mProject.setId(queryResult.getString("idProject"));
 						mProject.setProjectCode(queryResult.getString("ProjectCode"));
 						mProject.setName(queryResult.getString("Name"));
-						mProject.setCategory(queryResult.getString("Category"));
+						if(Project.isProjectCategory(queryResult.getString("Category"))){
+							mProject.setCategory(Project.ProjectCategory.valueOf(queryResult.getString("Category")));
+						}else{
+							mProject.setCategory(Project.ProjectCategory.UNKNOWN);
+						}						
 						mProject.setBrand(queryResult.getString("Brand"));
 						mProject.setOpco(queryResult.getString("OpCo"));
 						mProject.setEndMarket(queryResult.getString("EndMarket"));
@@ -64,7 +68,11 @@ public class ProjectSqlAdapter {
 						mProject.setId(queryResult.getString("idProject"));
 						mProject.setProjectCode(queryResult.getString("ProjectCode"));
 						mProject.setName(queryResult.getString("Name"));
-						mProject.setCategory(queryResult.getString("Category"));
+						if(Project.isProjectCategory(queryResult.getString("Category"))){
+							mProject.setCategory(Project.ProjectCategory.valueOf(queryResult.getString("Category")));
+						}else{
+							mProject.setCategory(Project.ProjectCategory.UNKNOWN);
+						}
 						mProject.setBrand(queryResult.getString("Brand"));
 						mProject.setOpco(queryResult.getString("OpCo"));
 						mProject.setEndMarket(queryResult.getString("EndMarket"));
@@ -88,6 +96,49 @@ public class ProjectSqlAdapter {
 		return null;
 	}
 	
+	public List<Project> SelectProject(DatabaseConnection mConnection, People p){
+		
+		if(mConnection.isConnected()){						
+			try {
+				Statement mStatement = mConnection.getConnection().createStatement();			
+				ResultSet queryResult = mStatement.executeQuery("SELECT Project.* from Project JOIN Team ON Project.idProject = Team.idProject WHERE Team.idPeople = "+p.getId() +" AND Team.Responsability = 'LEADER' ");
+				
+				try {					
+					List<Project> mListProject = new ArrayList<Project>();
+					while(queryResult.next()){
+						
+						Project mProject = new Project();
+						mProject.setId(queryResult.getString("idProject"));
+						mProject.setProjectCode(queryResult.getString("ProjectCode"));
+						mProject.setName(queryResult.getString("Name"));
+						if(Project.isProjectCategory(queryResult.getString("Category"))){
+							mProject.setCategory(Project.ProjectCategory.valueOf(queryResult.getString("Category")));
+						}else{
+							mProject.setCategory(Project.ProjectCategory.UNKNOWN);
+						}
+						mProject.setBrand(queryResult.getString("Brand"));
+						mProject.setOpco(queryResult.getString("OpCo"));
+						mProject.setEndMarket(queryResult.getString("EndMarket"));
+						mProject.setComplexity(queryResult.getString("Complexity"));
+						mProject.setApproval(queryResult.getBoolean("Approval"));
+						mProject.setStart(queryResult.getTimestamp("Start"));
+						mProject.setFinish(queryResult.getTimestamp("Finish"));
+						mProject.setDate(queryResult.getTimestamp("Date"));
+
+						mListProject.add(mProject);
+					}
+					return mListProject;
+					
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}		
+			} catch (SQLException e) {				
+				e.printStackTrace();
+			}			
+		}		
+		return null;
+	}
+
 	public boolean InsertProject(DatabaseConnection mConnection, Project mProject){
 		if(mConnection.isConnected()){			
 			try {
@@ -95,12 +146,12 @@ public class ProjectSqlAdapter {
 				PreparedStatement mPreparedStatement;
 				mPreparedStatement = mConnection.getConnection().prepareStatement("INSERT INTO Project(Name, Category, Brand, OpCo, EndMarket, Complexity, Approval, Start, Finish, Date) VALUES(?,?,?,?,?,?,?,?,?,?)");
 				mPreparedStatement.setString(1, mProject.getName());
-				mPreparedStatement.setString(2, mProject.getCategory());
+				mPreparedStatement.setString(2, mProject.getCategory().toString());
 				mPreparedStatement.setString(3, mProject.getBrand());
 				mPreparedStatement.setString(4, mProject.getOpco());
 				mPreparedStatement.setString(5, mProject.getEndMarket());
 				mPreparedStatement.setString(6, mProject.getComplexity());
-				mPreparedStatement.setBoolean(7, mProject.getApproval());
+				mPreparedStatement.setBoolean(7, mProject.isApproval());
 				mPreparedStatement.setTimestamp(8, mProject.getStart());
 				mPreparedStatement.setTimestamp(9, mProject.getFinish());
 				java.util.Date date = new java.util.Date();
@@ -145,7 +196,7 @@ public class ProjectSqlAdapter {
 		
 		List<Project> mListProject = SelectProject(mConnection);
 		for(Project p:mListProject){
-			if(p.getId() == mProject.getId()) 
+			if(p.getId().compareTo(mProject.getId()) == 0) 
 				return true;
 		}
 		return false;
@@ -166,7 +217,7 @@ public class ProjectSqlAdapter {
 					mPreparedStatement.executeUpdate();
 					
 					mPreparedStatement = mConnection.getConnection().prepareStatement("UPDATE Project SET Category = ? WHERE idProject = ?");
-					mPreparedStatement.setString(1, mProject.getCategory());
+					mPreparedStatement.setString(1, mProject.getCategory().toString());
 					mPreparedStatement.setString(2, mProject.getId());
 					mPreparedStatement.executeUpdate();
 					
@@ -191,7 +242,7 @@ public class ProjectSqlAdapter {
 					mPreparedStatement.executeUpdate();
 					
 					mPreparedStatement = mConnection.getConnection().prepareStatement("UPDATE Project SET Approval = ? WHERE idProject = ?");
-					mPreparedStatement.setBoolean(1, mProject.getApproval());
+					mPreparedStatement.setBoolean(1, mProject.isApproval());
 					mPreparedStatement.setString(2, mProject.getId());
 					mPreparedStatement.executeUpdate();
 					

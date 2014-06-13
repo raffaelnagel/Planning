@@ -7,7 +7,7 @@ public class Project {
 	private String id;
 	private String projectCode;
 	private String Name;
-	private String Category;
+	private ProjectCategory Category;
 	private String Brand;
 	private String opco;
 	private String endMarket;
@@ -16,7 +16,13 @@ public class Project {
 	private Timestamp start;
 	private Timestamp finish;
 	private Timestamp Date;
-	
+	public static enum ProjectCategory{BAU, BUSINESS, CONSUMER, KNOWLEDGE, PEOPLE, REGULATION, UNKNOWN};
+	public static boolean isProjectCategory(String category) {
+	    for (ProjectCategory pc : ProjectCategory.values())
+	        if (pc.name().equals(category)) 
+	            return true;	        
+	    return false;
+	}
 	
 	public String getId() {
 		return id;
@@ -42,11 +48,11 @@ public class Project {
 		Name = name;
 	}
 
-	public String getCategory() {
+	public ProjectCategory getCategory() {
 		return Category;
 	}
 
-	public void setCategory(String category) {
+	public void setCategory(ProjectCategory category) {
 		Category = category;
 	}
 
@@ -82,7 +88,7 @@ public class Project {
 		this.complexity = complexity;
 	}
 
-	public boolean getApproval() {
+	public boolean isApproval() {
 		return approval;
 	}
 

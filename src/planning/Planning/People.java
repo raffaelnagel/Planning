@@ -5,6 +5,7 @@ public class People {
 	private String id;
 	private String name;
 	private String code;
+	private String workgroup;
 	private Login login;
 	
 	public People(String name, String code){
@@ -53,6 +54,14 @@ public class People {
 		this.login.setUser(user);
 		this.login.setPassword(password);
 		this.login.setPermissionLevel(permissionLevel);
+	}
+
+	public String getWorkgroup() {
+		return workgroup;
+	}
+
+	public void setWorkgroup(String workgroup) {
+		this.workgroup = workgroup;
 	}
 	
 }

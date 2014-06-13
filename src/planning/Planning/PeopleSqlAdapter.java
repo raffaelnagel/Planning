@@ -24,6 +24,7 @@ public class PeopleSqlAdapter {
 						mPeople.setId(queryResult.getString("idPeople"));
 						mPeople.setName(queryResult.getString("Name"));
 						mPeople.setCode(queryResult.getString("Code"));
+						mPeople.setWorkgroup(queryResult.getString("Workgroup"));
 						mPeople.setLogin(null);
 						mListPeople.add(mPeople);
 					}
@@ -54,7 +55,8 @@ public class PeopleSqlAdapter {
 						People mPeople = new People();
 						mPeople.setId(queryResult.getString("idPeople"));
 						mPeople.setName(queryResult.getString("Name"));
-						mPeople.setCode("Code");
+						mPeople.setCode(queryResult.getString("Code"));
+						mPeople.setWorkgroup(queryResult.getString("Workgroup"));
 						mPeople.setLogin(null);
 						mListPeople.add(mPeople);
 					}
@@ -76,9 +78,10 @@ public class PeopleSqlAdapter {
 			try {
 				
 				PreparedStatement mPreparedStatement;
-				mPreparedStatement = mConnection.getConnection().prepareStatement("INSERT INTO People(Name, Code) VALUES(?,?)");
+				mPreparedStatement = mConnection.getConnection().prepareStatement("INSERT INTO People(Name, Code, Workgroup) VALUES(?,?,?)");
 				mPreparedStatement.setString(1, mPeople.getName());
 				mPreparedStatement.setString(2, mPeople.getCode());
+				mPreparedStatement.setString(3, mPeople.getWorkgroup());
 				mPreparedStatement.executeUpdate();
 				
 				return true;
@@ -96,8 +99,9 @@ public class PeopleSqlAdapter {
 			try {
 				
 				PreparedStatement mPreparedStatement;
-				mPreparedStatement = mConnection.getConnection().prepareStatement("DELETE FROM People WHERE idPeople = ?");
-				mPreparedStatement.setString(1, mPeople.getId());
+				mPreparedStatement = mConnection.getConnection().prepareStatement("DELETE FROM People WHERE Name = ? AND Code = ?");
+				mPreparedStatement.setString(1, mPeople.getName());
+				mPreparedStatement.setString(2, mPeople.getCode());
 				mPreparedStatement.executeUpdate();
 				
 				return true;
@@ -120,24 +124,32 @@ public class PeopleSqlAdapter {
 		return false;
 	}
 	
-	public boolean UpdatePeople(DatabaseConnection mConnection, People mPeople){
+	public boolean UpdatePeople(DatabaseConnection mConnection, People oldPeople, People newPeople){
 		
 		if(mConnection.isConnected()){	
-			if(!Exists(mConnection, mPeople)){
-						
-				try {
-					
-					PreparedStatement mPreparedStatement;
-					mPreparedStatement = mConnection.getConnection().prepareStatement("UPDATE People SET Name = ? WHERE idPeople = ?");
-					mPreparedStatement.setString(1, mPeople.getName());
-					mPreparedStatement.setString(2, mPeople.getId());
-					mPreparedStatement.executeUpdate();
-					
-					mPreparedStatement = mConnection.getConnection().prepareStatement("UPDATE People SET Code = ? WHERE idPeople = ?");
-					mPreparedStatement.setString(1, mPeople.getCode());
-					mPreparedStatement.setString(2, mPeople.getId());
-					mPreparedStatement.executeUpdate();
-					
+			if(Exists(mConnection, oldPeople) == true){						
+				try {					
+					if(newPeople.getName().length() > 0){
+						PreparedStatement mPreparedStatement;
+						mPreparedStatement = mConnection.getConnection().prepareStatement("UPDATE People SET Name = ? WHERE idPeople = ?");
+						mPreparedStatement.setString(1, newPeople.getName());
+						mPreparedStatement.setString(2, oldPeople.getId());
+						mPreparedStatement.executeUpdate();
+					}
+					if(newPeople.getCode().length() > 0){
+						PreparedStatement mPreparedStatement;
+						mPreparedStatement = mConnection.getConnection().prepareStatement("UPDATE People SET Code = ? WHERE idPeople = ?");
+						mPreparedStatement.setString(1, newPeople.getCode());
+						mPreparedStatement.setString(2, oldPeople.getId());
+						mPreparedStatement.executeUpdate();
+					}
+					if(newPeople.getWorkgroup().length() > 0){
+						PreparedStatement mPreparedStatement;
+						mPreparedStatement = mConnection.getConnection().prepareStatement("UPDATE People SET Workgroup = ? WHERE idPeople = ?");
+						mPreparedStatement.setString(1, newPeople.getWorkgroup());
+						mPreparedStatement.setString(2, oldPeople.getId());
+						mPreparedStatement.executeUpdate();
+					}					
 					return true;
 				} catch (SQLException e) {
 					e.printStackTrace();

@@ -41,7 +41,7 @@ public class FrameLogin {
 		JOptionPane.showOptionDialog(null, panel, "Login",JOptionPane.NO_OPTION, JOptionPane.PLAIN_MESSAGE,null, options, options[0]);	
 	}
 	
-	public int Log(DatabaseConnection mDataConnection){
+	public People Log(DatabaseConnection mDataConnection){
 		
 		newLogin.setUser(txtLogin.getText());
 		newLogin.setPassword(new String(passw.getPassword()));
@@ -59,7 +59,8 @@ public class FrameLogin {
 				userFound = true;
 				if(pLogin.getPassword().equals(newLogin.getPassword())){
 					JOptionPane.showMessageDialog(null,"Access Granted.");
-					return pLogin.getPermissionLevel();
+					p.setLogin(pLogin);
+					return p;
 				}else{
 					JOptionPane.showMessageDialog(null,"Wrong Password");
 				}
@@ -71,7 +72,7 @@ public class FrameLogin {
 		if(!userFound)
 			JOptionPane.showMessageDialog(null,"Invalid User Name");
 		
-		return -1;
+		return null;
 	}
 
 }

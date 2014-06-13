@@ -44,7 +44,7 @@ public class Team {
 	}	
 	
 	
-	public List<Team> SelectPeopleTeam(DatabaseConnection mConnection, Project mProject){
+	static public List<Team> SelectPeopleTeam(DatabaseConnection mConnection, Project mProject){
 		
 		if(mConnection.isConnected()){
 			try{
@@ -56,11 +56,14 @@ public class Team {
 					while(queryResult.next()){
 						
 						People mPeople = new People();
-						mPeople.setId(queryResult.getString("idPeople"));						
+						mPeople.setId(queryResult.getString("idPeople"));		
 						
-						ResultSet queryResult1 = mStatement.executeQuery("SELECT * FROM People WHERE idPeople = '" + mPeople.getId() + "'");
-						mPeople.setName(queryResult1.getString("Name"));						
-						mPeople.setCode(queryResult1.getString("Code"));
+						Statement mStatement_People = mConnection.getConnection().createStatement();		
+						ResultSet queryResult1 = mStatement_People.executeQuery("SELECT * FROM People WHERE idPeople = '" + mPeople.getId() + "'");
+						while(queryResult1.next()){
+							mPeople.setName(queryResult1.getString("Name"));						
+							mPeople.setCode(queryResult1.getString("Code"));
+						}
 						
 						Team mTeam = new Team(mPeople, mProject, null);
 						mTeam.setResponsability(queryResult.getString("Responsability"));
@@ -80,7 +83,7 @@ public class Team {
 	}
 	
 	
-	public boolean InsertPeopleTeam(DatabaseConnection mConnection, Team mTeam){
+	static public boolean InsertPeopleTeam(DatabaseConnection mConnection, Team mTeam){
 		if(mConnection.isConnected()){			
 			try {
 				
@@ -91,12 +94,43 @@ public class Team {
 				PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
 				
 				if(mProjectSqlAdapter.Exists(mConnection, mProject) & mPeopleSqlAdapter.Exists(mConnection, mPeople)){
-				
+					
 					PreparedStatement mPreparedStatement;
 					mPreparedStatement = mConnection.getConnection().prepareStatement("INSERT INTO Team(idProject, idPeople, Responsability) VALUES(?,?,?)");
 					mPreparedStatement.setString(1, mProject.getId());
 					mPreparedStatement.setString(2, mPeople.getId());
 					mPreparedStatement.setString(3, mTeam.getResponsability());
+					mPreparedStatement.executeUpdate();
+					
+					return true;
+				}else{
+					return false;
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
+				System.out.println(e.getMessage());
+			} 								
+				
+		}
+		return false;
+	}
+	
+	static public boolean RemovePeopleTeam(DatabaseConnection mConnection, Team mTeam){
+		if(mConnection.isConnected()){			
+			try {
+				
+				Project mProject = mTeam.getProject();
+				People mPeople = mTeam.getPeople();
+				
+				ProjectSqlAdapter mProjectSqlAdapter = new ProjectSqlAdapter();
+				PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
+				
+				if(mProjectSqlAdapter.Exists(mConnection, mProject) & mPeopleSqlAdapter.Exists(mConnection, mPeople)){
+					
+					PreparedStatement mPreparedStatement;
+					mPreparedStatement = mConnection.getConnection().prepareStatement("DELETE FROM Team WHERE idProject = ? AND idPeople = ?");
+					mPreparedStatement.setString(1, mProject.getId());
+					mPreparedStatement.setString(2, mPeople.getId());
 					mPreparedStatement.executeUpdate();
 					
 					return true;

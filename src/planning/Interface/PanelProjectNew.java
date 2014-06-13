@@ -1,5 +1,6 @@
 package planning.Interface;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.GridBagConstraints;
@@ -8,10 +9,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.Date;
 import java.sql.Timestamp;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Calendar;
+import java.util.List;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -20,8 +26,10 @@ import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 import planning.Planning.DatabaseConnection;
+import planning.Planning.People;
 import planning.Planning.Project;
 import planning.Planning.ProjectSqlAdapter;
+import planning.Planning.Team;
 
 import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
 import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
@@ -32,7 +40,8 @@ import net.sourceforge.jdatepicker.impl.SqlDateModel;
 public class PanelProjectNew extends JPanel{
 	
 	JLabel lbName = new JLabel(), lbCategory = new JLabel(), lbBrand = new JLabel(), lbEndMarket = new JLabel(), lbOpCo = new JLabel(), lbComplexity = new JLabel(), lbStart = new JLabel(), lbFinish = new JLabel();
-	JTextField tfName = new JTextField(30), tfCategory = new JTextField(10), tfBrand = new JTextField(10), tfEndMarket = new JTextField(11), tfOpCo = new JTextField(11), tfComplexity = new JTextField(12);
+	JTextField tfName = new JTextField(30), tfBrand = new JTextField(10), tfEndMarket = new JTextField(11), tfOpCo = new JTextField(11);
+	JComboBox cbCategory = new JComboBox(Project.ProjectCategory.values()), cbComplexity = new JComboBox(new String[] {"","Cap1","Cap2","Cap3"});
 	SqlDateModel StartModel = new SqlDateModel();
 	SqlDateModel FinishModel = new SqlDateModel();
   	JDatePanelImpl StartDatePanel = new JDatePanelImpl(StartModel);
@@ -40,18 +49,18 @@ public class PanelProjectNew extends JPanel{
 	final JDatePickerImpl StartDatePicker = new JDatePickerImpl(StartDatePanel);
 	final JDatePickerImpl FinishDatePicker = new JDatePickerImpl(FinishDatePanel);
 	
-	private void fieldReset(){
+	private void FieldReset(){
 		tfName.setText(null);
-		tfCategory.setText(null);
+		cbCategory.setSelectedIndex(0);
 		tfBrand.setText(null);
 		tfEndMarket.setText(null);
 		tfOpCo.setText(null);
-		tfComplexity.setText(null);
+		cbComplexity.setSelectedIndex(0);
 		StartModel.setValue(null);
 		FinishModel.setValue(null);		
 	}
 	
-	public PanelProjectNew(){
+	public PanelProjectNew(final People loggedUser){
 		
 		this.setVisible(true);
 		this.setLayout(new GridBagLayout());
@@ -59,10 +68,15 @@ public class PanelProjectNew extends JPanel{
 		JPanel InputPanel = new JPanel(new GridBagLayout());
 		JPanel buttonPanel = new JPanel(new FlowLayout());
 		JButton btnCreate = new JButton("Create");
-
+		cbComplexity.setPreferredSize(new Dimension(100,20));
+		cbCategory.setPreferredSize(new Dimension(100,20));
+		cbCategory.setBackground(Color.white);		
+		cbComplexity.setBackground(Color.white);		
 		//
 		lbName.setText("Name: ");
 		lbCategory.setText(" Category: ");
+		cbCategory.insertItemAt("", 0);
+		cbCategory.setSelectedIndex(0);
 		lbBrand.setText("Brand: ");
 		lbEndMarket.setText(" End Market: ");
 		lbOpCo.setText(" OpCo: ");
@@ -87,7 +101,9 @@ public class PanelProjectNew extends JPanel{
 		InputPanel.add(lbCategory,c);
 		c.gridx = 4;
 		c.gridwidth = 2;
-		InputPanel.add(tfCategory,c);
+		c.ipady = 3;
+		InputPanel.add(cbCategory,c);
+		c.ipady = 5;
 		c.gridwidth = 1;
 		c.gridx = 5;			
 		
@@ -121,7 +137,7 @@ public class PanelProjectNew extends JPanel{
 		c.gridx = 0;
 		InputPanel.add(lbComplexity,c);
 		c.gridx = 1;
-		InputPanel.add(tfComplexity,c);
+		InputPanel.add(cbComplexity,c);
 		
 		c.gridx = 2;
 		InputPanel.add(lbStart,c);
@@ -177,11 +193,12 @@ public class PanelProjectNew extends JPanel{
 						Project newProject = new Project();
 						
 						newProject.setName(tfName.getText());
-						newProject.setCategory(tfCategory.getText());
+						newProject.setCategory(Project.ProjectCategory.valueOf(cbCategory.getSelectedItem().toString()));
 						newProject.setBrand(tfBrand.getText());
 						newProject.setOpco(tfOpCo.getText());
 						newProject.setEndMarket(tfEndMarket.getText());
 						newProject.setApproval(false);
+						newProject.setComplexity(cbComplexity.getSelectedItem().toString());
 						
 						Date selectedDate = (Date) StartDatePicker.getModel().getValue();
 						Timestamp tDate = new Timestamp(selectedDate.getTime());  
@@ -196,11 +213,35 @@ public class PanelProjectNew extends JPanel{
 						
 						boolean ProjectCreated = mProjectSqlAdapter.InsertProject(mData, newProject);
 						if(ProjectCreated){
+							
+							//add Project Leader to the Team of the Project
+							List<Project> mListProjectTeam = mProjectSqlAdapter.SelectProject(mData);
+							Project mProjectTeam = new Project();
+							
+							DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+							java.util.Date pDate = null, newDate = null;
+							for(Project p:mListProjectTeam){
+								try {
+									pDate = df.parse(p.getDate().toString());
+									newDate = df.parse(newProject.getDate().toString());
+								} catch (ParseException e1) {									
+									e1.printStackTrace();
+								}
+								
+								if(p.getName().equals(newProject.getName()) == true && pDate.equals(newDate) == true){
+									mProjectTeam = p;
+								}
+							}
+														
+							Team newTeam = new Team(loggedUser, mProjectTeam, "Leader");
+							Team.InsertPeopleTeam(mData, newTeam);
+							// --
+							
 							JOptionPane.showMessageDialog(getRootPane(), "Project Created!");
-							fieldReset();
+							FieldReset();
 						}else{
 							JOptionPane.showMessageDialog(getRootPane(), "Error!");
-							fieldReset();
+							FieldReset();
 						}
 					}
 				}else{
