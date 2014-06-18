@@ -34,6 +34,7 @@ import planning.Planning.DatabaseConnection;
 import planning.Planning.MyListCellRenderer;
 import planning.Planning.People;
 import planning.Planning.PeopleSqlAdapter;
+import planning.Planning.Planning;
 
 
 
@@ -53,12 +54,7 @@ public class PanelManagePeople extends JPanel{
 	private void refreshListItems(){
 		//add data to list
 		PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
-		String URL = "jdbc:mysql://localhost:3306/Planning";
-		String login = "root";
-		String pass = "root";
-
-		DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
-		mData.openConnection();
+		DatabaseConnection mData = Planning.OpenConnection();
 		List<People> mListPeople = new ArrayList<People>();
 		mListPeople = mPeopleSqlAdapter.SelectPeople(mData);
 		
@@ -137,12 +133,8 @@ public class PanelManagePeople extends JPanel{
 		btnAdd.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
-				String URL = "jdbc:mysql://localhost:3306/Planning";
-				String login = "root";
-				String pass = "root";
-
-				DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
-				mData.openConnection();
+				
+				DatabaseConnection mData = Planning.OpenConnection();
 				
 				PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
 				
@@ -159,11 +151,15 @@ public class PanelManagePeople extends JPanel{
 						if(mPeopleSqlAdapter.Exists(mData, newPeople) == true){
 							JOptionPane.showMessageDialog(getRootPane(), "Employee already exists!");
 						}else{
-							if(mPeopleSqlAdapter.InsertPeople(mData, newPeople)){
-								JOptionPane.showMessageDialog(getRootPane(), "Employee sucessfully added");
-								refreshListItems();
+							if(mPeopleSqlAdapter.TestCodeAvailability(mData, newPeople.getCode())){
+								if(mPeopleSqlAdapter.InsertPeople(mData, newPeople)){
+									JOptionPane.showMessageDialog(getRootPane(), "Employee sucessfully added");
+									refreshListItems();
+								}else{
+									JOptionPane.showMessageDialog(getRootPane(), "Error!");
+								}
 							}else{
-								JOptionPane.showMessageDialog(getRootPane(), "Error!");
+								JOptionPane.showMessageDialog(getRootPane(), "Code already in use!");
 							}
 						}
 						tfName.setText(null);
@@ -173,6 +169,7 @@ public class PanelManagePeople extends JPanel{
 				}else{
 					JOptionPane.showMessageDialog(getRootPane(), "Please, enter a valid Name");		
 				}
+				mData.closeConnection();
 			}
 		});
 		buttonPanel.add(btnAdd);
@@ -204,21 +201,16 @@ public class PanelManagePeople extends JPanel{
             public void valueChanged(ListSelectionEvent arg0) {
                 if (!arg0.getValueIsAdjusting()) {
                   try{
-                	tfPeopleName.setText(listPeople.getSelectedValue().toString());
+                	  tfPeopleName.setText(listPeople.getSelectedValue().toString());                  
                   
-                  String URL = "jdbc:mysql://localhost:3306/Planning";
-                  String login = "root";
-  				  String pass = "root";
-
-  				  DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
-  				  mData.openConnection();
-  				
-  				  PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
-  				  
-  				  List<People> mListPeople = new ArrayList<People>();
-  				  mListPeople = mPeopleSqlAdapter.SelectPeople(mData, "Name", listPeople.getSelectedValue().toString());
-  				  tfPeopleCode.setText(mListPeople.get(0).getCode());
-  				  tfPeopleWorkgroup.setText(mListPeople.get(0).getWorkgroup());
+	  				  DatabaseConnection mData = Planning.OpenConnection();
+	  				  PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
+	  				  
+	  				  List<People> mListPeople = new ArrayList<People>();
+	  				  mListPeople = mPeopleSqlAdapter.SelectPeople(mData, "Name", listPeople.getSelectedValue().toString());
+	  				  tfPeopleCode.setText(mListPeople.get(0).getCode());
+	  				  tfPeopleWorkgroup.setText(mListPeople.get(0).getWorkgroup());
+	  				  mData.closeConnection();
                   }catch(Exception e){
                 	  
                   }
@@ -265,13 +257,7 @@ public class PanelManagePeople extends JPanel{
 		btnDelete.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
-				String URL = "jdbc:mysql://localhost:3306/Planning";
-				String login = "root";
-				String pass = "root";
-
-				DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
-				mData.openConnection();
-				
+				DatabaseConnection mData = Planning.OpenConnection();
 				PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
 				People mPeople = new People(tfPeopleName.getText(), tfPeopleCode.getText());
 				int option = JOptionPane.showConfirmDialog(getRootPane(), "Confirm?");
@@ -285,6 +271,7 @@ public class PanelManagePeople extends JPanel{
 						JOptionPane.showMessageDialog(getRootPane(), "Error!");
 					}
 				}
+				mData.closeConnection();
 			}
 		});
 		//button Edit
@@ -300,15 +287,9 @@ public class PanelManagePeople extends JPanel{
 		btnEdit.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
-				String URL = "jdbc:mysql://localhost:3306/Planning";
-				String login = "root";
-				String pass = "root";
-
-				DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
-				mData.openConnection();
+				DatabaseConnection mData = Planning.OpenConnection();
 				
-				PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
-				
+				PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();				
 				
 				int option = JOptionPane.showConfirmDialog(getRootPane(), "Confirm?");
 				
@@ -336,8 +317,10 @@ public class PanelManagePeople extends JPanel{
 					tfCode.setText(null);
 					tfWorkgroup.setText(null);
 				}
+				mData.closeConnection();
 			}
 		});
+		
 		c.gridx = 1;
 		c.gridy = 1;
 		c.ipady = 80;

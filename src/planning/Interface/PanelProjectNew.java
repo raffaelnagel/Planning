@@ -27,6 +27,7 @@ import javax.swing.border.TitledBorder;
 
 import planning.Planning.DatabaseConnection;
 import planning.Planning.People;
+import planning.Planning.Planning;
 import planning.Planning.Project;
 import planning.Planning.ProjectSqlAdapter;
 import planning.Planning.Team;
@@ -177,12 +178,7 @@ public class PanelProjectNew extends JPanel{
 		btnCreate.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
-				String URL = "jdbc:mysql://localhost:3306/Planning";
-				String login = "root";
-				String pass = "root";
-
-				DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
-				mData.openConnection();
+				DatabaseConnection mData = Planning.OpenConnection();
 				ProjectSqlAdapter mProjectSqlAdapter = new ProjectSqlAdapter();				
 				
 					
@@ -198,7 +194,7 @@ public class PanelProjectNew extends JPanel{
 						newProject.setOpco(tfOpCo.getText());
 						newProject.setEndMarket(tfEndMarket.getText());
 						newProject.setApproval(false);
-						newProject.setComplexity(cbComplexity.getSelectedItem().toString());
+						newProject.setComplexity(Project.ProjectComplexity.valueOf(cbComplexity.getSelectedItem().toString()));
 						
 						Date selectedDate = (Date) StartDatePicker.getModel().getValue();
 						Timestamp tDate = new Timestamp(selectedDate.getTime());  

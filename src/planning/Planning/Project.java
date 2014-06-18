@@ -11,15 +11,24 @@ public class Project {
 	private String Brand;
 	private String opco;
 	private String endMarket;
-	private String complexity;
+	private ProjectComplexity complexity;
 	private boolean approval;
 	private Timestamp start;
 	private Timestamp finish;
 	private Timestamp Date;
+	public static enum ProjectComplexity{CAP1, CAP2, CAP3};
 	public static enum ProjectCategory{BAU, BUSINESS, CONSUMER, KNOWLEDGE, PEOPLE, REGULATION, UNKNOWN};
+	
 	public static boolean isProjectCategory(String category) {
 	    for (ProjectCategory pc : ProjectCategory.values())
 	        if (pc.name().equals(category)) 
+	            return true;	        
+	    return false;
+	}
+	
+	public static boolean isProjectComplexity(String complexity) {
+	    for (ProjectComplexity pc : ProjectComplexity.values())
+	        if (pc.name().equals(complexity)) 
 	            return true;	        
 	    return false;
 	}
@@ -80,11 +89,11 @@ public class Project {
 		this.endMarket = endMarket;
 	}
 
-	public String getComplexity() {
+	public ProjectComplexity getComplexity() {
 		return complexity;
 	}
 
-	public void setComplexity(String complexity) {
+	public void setComplexity(ProjectComplexity complexity) {
 		this.complexity = complexity;
 	}
 
@@ -118,9 +127,5 @@ public class Project {
 
 	public void setDate(Timestamp date) {
 		Date = date;
-	}
-
-	
-	
-	
+	}	
 }

@@ -36,6 +36,7 @@ import planning.Planning.DatabaseConnection;
 import planning.Planning.People;
 import planning.Planning.Plan;
 import planning.Planning.PlanSqlAdapter;
+import planning.Planning.Planning;
 import planning.Planning.Project;
 import planning.Planning.ProjectSqlAdapter;
 
@@ -100,7 +101,9 @@ public class PanelPlanNew extends JPanel{
 		return null;
 	}
 	
-	private void RefreshPlanList(DatabaseConnection mData, List<String> projectCodes, ProjectSqlAdapter mProjectSqlAdapter){
+	private void RefreshPlanList(List<String> projectCodes, ProjectSqlAdapter mProjectSqlAdapter){
+		DatabaseConnection mData = Planning.OpenConnection();	
+		
 		int projectCode_index = cbProjectCode.getSelectedIndex();
 		String Code = projectCodes.get(projectCode_index);
 		List<Project> mListProject = mProjectSqlAdapter.SelectProject(mData, "ProjectCode", Code);
@@ -151,6 +154,7 @@ public class PanelPlanNew extends JPanel{
 			
 			line++;
 		}
+		mData.closeConnection();
 	}
 
 	
@@ -190,12 +194,8 @@ public class PanelPlanNew extends JPanel{
 		tfProjectCategory.setEditable(false);
 		
 		//popular comboboxes
-		String URL = "jdbc:mysql://localhost:3306/Planning";
-		String login = "root";
-		String pass = "root";
-
-		final DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
-		mData.openConnection();
+		
+		final DatabaseConnection mData = Planning.OpenConnection();		
 		
 		//-- project code
 		final ProjectSqlAdapter mProjectSqlAdapter = new ProjectSqlAdapter();
@@ -217,9 +217,10 @@ public class PanelPlanNew extends JPanel{
 
 			@Override
 			public void itemStateChanged(ItemEvent arg0) {
-				RefreshPlanList(mData, projectCodes, mProjectSqlAdapter);
+				RefreshPlanList(projectCodes, mProjectSqlAdapter);
 			}
 		});
+		mData.closeConnection();
 		
 		//button Create
 		btnCreate.setPreferredSize(new Dimension(150,32));
@@ -245,6 +246,7 @@ public class PanelPlanNew extends JPanel{
 							
 							if(option == JOptionPane.YES_OPTION){
 								//get Project								
+								DatabaseConnection mData = Planning.OpenConnection();		
 								List<Project> mListProject = mProjectSqlAdapter.SelectProject(mData, "ProjectCode", Code);
 								Project mProject = mListProject.get(0);								
 								
@@ -267,7 +269,8 @@ public class PanelPlanNew extends JPanel{
 								mPlanSqlAdapter.InsertPlan(mData, newPlan);
 								
 								FieldReset();
-								RefreshPlanList(mData, projectCodes, mProjectSqlAdapter);
+								RefreshPlanList(projectCodes, mProjectSqlAdapter);
+								mData.closeConnection();
 							}
 						}					
 						catch(Exception ex){

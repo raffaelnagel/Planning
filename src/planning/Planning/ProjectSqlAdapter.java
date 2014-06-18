@@ -33,7 +33,11 @@ public class ProjectSqlAdapter {
 						mProject.setBrand(queryResult.getString("Brand"));
 						mProject.setOpco(queryResult.getString("OpCo"));
 						mProject.setEndMarket(queryResult.getString("EndMarket"));
-						mProject.setComplexity(queryResult.getString("Complexity"));
+						if(Project.isProjectComplexity(queryResult.getString("Complexity"))){
+							mProject.setComplexity(Project.ProjectComplexity.valueOf(queryResult.getString("Complexity")));
+						}else{
+							mProject.setComplexity(Project.ProjectComplexity.CAP1);
+						}							
 						mProject.setApproval(queryResult.getBoolean("Approval"));
 						mProject.setStart(queryResult.getTimestamp("Start"));
 						mProject.setFinish(queryResult.getTimestamp("Finish"));
@@ -76,7 +80,11 @@ public class ProjectSqlAdapter {
 						mProject.setBrand(queryResult.getString("Brand"));
 						mProject.setOpco(queryResult.getString("OpCo"));
 						mProject.setEndMarket(queryResult.getString("EndMarket"));
-						mProject.setComplexity(queryResult.getString("Complexity"));
+						if(Project.isProjectComplexity(queryResult.getString("Complexity"))){
+							mProject.setComplexity(Project.ProjectComplexity.valueOf(queryResult.getString("Complexity")));
+						}else{
+							mProject.setComplexity(Project.ProjectComplexity.CAP1);
+						}
 						mProject.setApproval(queryResult.getBoolean("Approval"));
 						mProject.setStart(queryResult.getTimestamp("Start"));
 						mProject.setFinish(queryResult.getTimestamp("Finish"));
@@ -119,7 +127,11 @@ public class ProjectSqlAdapter {
 						mProject.setBrand(queryResult.getString("Brand"));
 						mProject.setOpco(queryResult.getString("OpCo"));
 						mProject.setEndMarket(queryResult.getString("EndMarket"));
-						mProject.setComplexity(queryResult.getString("Complexity"));
+						if(Project.isProjectComplexity(queryResult.getString("Complexity"))){
+							mProject.setComplexity(Project.ProjectComplexity.valueOf(queryResult.getString("Complexity")));
+						}else{
+							mProject.setComplexity(Project.ProjectComplexity.CAP1);
+						}
 						mProject.setApproval(queryResult.getBoolean("Approval"));
 						mProject.setStart(queryResult.getTimestamp("Start"));
 						mProject.setFinish(queryResult.getTimestamp("Finish"));
@@ -150,7 +162,7 @@ public class ProjectSqlAdapter {
 				mPreparedStatement.setString(3, mProject.getBrand());
 				mPreparedStatement.setString(4, mProject.getOpco());
 				mPreparedStatement.setString(5, mProject.getEndMarket());
-				mPreparedStatement.setString(6, mProject.getComplexity());
+				mPreparedStatement.setString(6, mProject.getComplexity().toString());
 				mPreparedStatement.setBoolean(7, mProject.isApproval());
 				mPreparedStatement.setTimestamp(8, mProject.getStart());
 				mPreparedStatement.setTimestamp(9, mProject.getFinish());
@@ -205,7 +217,7 @@ public class ProjectSqlAdapter {
 	public boolean UpdateProject(DatabaseConnection mConnection, Project mProject){
 		
 		if(mConnection.isConnected()){	
-			if(!Exists(mConnection, mProject)){
+			if(Exists(mConnection, mProject)){
 						
 				try {
 					
@@ -237,7 +249,7 @@ public class ProjectSqlAdapter {
 					mPreparedStatement.executeUpdate();
 					
 					mPreparedStatement = mConnection.getConnection().prepareStatement("UPDATE Project SET Complexity = ? WHERE idProject = ?");
-					mPreparedStatement.setString(1, mProject.getComplexity());
+					mPreparedStatement.setString(1, mProject.getComplexity().toString());
 					mPreparedStatement.setString(2, mProject.getId());
 					mPreparedStatement.executeUpdate();
 					

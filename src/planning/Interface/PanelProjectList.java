@@ -28,13 +28,13 @@ import javax.swing.table.DefaultTableModel;
 
 import planning.Planning.DatabaseConnection;
 import planning.Planning.People;
+import planning.Planning.Planning;
 import planning.Planning.Project;
 import planning.Planning.ProjectSqlAdapter;
 
 
 @SuppressWarnings("serial")
-public class PanelProjectList extends JPanel{
-	
+public class PanelProjectList extends JPanel{	
 	
 	Object [] columnNames = {"Project Code","Name","Category","Brand","OpCo","End Market", "Complexity", "Approval", "Start", "Finish", "Created on"};
 	JTable mTable = new JTable(new DefaultTableModel(columnNames, 0)){
@@ -47,9 +47,10 @@ public class PanelProjectList extends JPanel{
 	JButton btnLoadData = new JButton("");
 	JButton btnDeleteData = new JButton("");
 	JButton btnSearch = new JButton("");
+	JButton btnEdit = new JButton("");
 	JLabel lbName = new JLabel(), lbCategory = new JLabel(), lbBrand = new JLabel(), lbEndMarket = new JLabel(), lbOpCo = new JLabel(), lbComplexity = new JLabel(), lbApproval = new JLabel(), lbStart = new JLabel(), lbFinish = new JLabel(), lbDate = new JLabel();
 	JTextField tfName = new JTextField(30), tfBrand = new JTextField(12), tfEndMarket = new JTextField(11), tfOpCo = new JTextField(11), tfApproval = new JTextField(11), tfStart = new JTextField(15), tfFinish = new JTextField(15), tfDate = new JTextField(11);
-	JComboBox cbCategory = new JComboBox(Project.ProjectCategory.values()), cbComplexity = new JComboBox(new String[] {"","Cap1","Cap2","Cap3"});
+	JComboBox cbCategory = new JComboBox(Project.ProjectCategory.values()), cbComplexity = new JComboBox(Project.ProjectComplexity.values());
 	
 	public PanelProjectList(final People loggedUser){
 		
@@ -79,6 +80,8 @@ public class PanelProjectList extends JPanel{
 		cbComplexity.setPreferredSize(new Dimension(50,18));
 		cbCategory.setBackground(Color.white);		
 		cbComplexity.setBackground(Color.white);
+		cbComplexity.insertItemAt("", 0);
+		cbComplexity.setSelectedIndex(0);
 		
 		
 		GridBagConstraints c = new GridBagConstraints();
@@ -191,12 +194,9 @@ public class PanelProjectList extends JPanel{
 		btnLoadData.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
-				String URL = "jdbc:mysql://localhost:3306/Planning";
-				String login = "root";
-				String pass = "root";
 
-				DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
-				mData.openConnection();
+				DatabaseConnection mData = Planning.OpenConnection();	
+				
 				ProjectSqlAdapter mProjectSqlAdapter = new ProjectSqlAdapter();
 				
 				List<Project> mListProject;
@@ -238,9 +238,9 @@ public class PanelProjectList extends JPanel{
 					
 					line++;
 				}
-			}
-		});
-		
+				mData.closeConnection();
+			}			
+		});		
 				
 		//button Delete
 		btnDeleteData.setPreferredSize(new Dimension(150,50));
@@ -253,12 +253,7 @@ public class PanelProjectList extends JPanel{
 		btnDeleteData.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
-				String URL = "jdbc:mysql://localhost:3306/Planning";
-				String login = "root";
-				String pass = "root";
-
-				DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
-				mData.openConnection();
+				DatabaseConnection mData = Planning.OpenConnection();	
 				ProjectSqlAdapter mProjectSqlAdapter = new ProjectSqlAdapter();
 				
 				int selectedRow = mTable.getSelectedRow();
@@ -279,6 +274,7 @@ public class PanelProjectList extends JPanel{
 					}
 				}
 				btnLoadData.doClick();
+				mData.closeConnection();
 			}
 		});
 		
@@ -293,77 +289,120 @@ public class PanelProjectList extends JPanel{
 		btnSearch.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
-				String URL = "jdbc:mysql://localhost:3306/Planning";
-				String login = "root";
-				String pass = "root";
-
-				DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
-				mData.openConnection();
+				DatabaseConnection mData = Planning.OpenConnection();	
 				ProjectSqlAdapter mProjectSqlAdapter = new ProjectSqlAdapter();
 				List<Project> mListProject = mProjectSqlAdapter.SelectProject(mData);
 
 				for(int row = mModel.getRowCount() - 1; row >= 0 ; row--)
-					mModel.removeRow(row);
+					mModel.removeRow(row);				
 				
-				
-				//Filter				
+				//Filter	
 			    for (Iterator<Project> i = mListProject.iterator(); i.hasNext(); )  
 			    {  
 			        Project value = i.next();  
-			        if( tfName.getText().length() > 0 && value.getName() == null) i.remove();
-			        if( cbCategory.getSelectedItem().toString().length() > 0 && value.getCategory() == null) i.remove();
-			        if( tfBrand.getText().length() > 0 && value.getBrand() == null) i.remove();
-			        if( tfOpCo.getText().length() > 0 && value.getOpco() == null) i.remove();
-			        if( tfEndMarket.getText().length() > 0 && value.getEndMarket() == null) i.remove();
-			        if( cbComplexity.getSelectedItem().toString().length() > 0 && value.getComplexity() == null) i.remove();			        
-			        if( tfStart.getText().length() > 0 && value.getStart() == null) i.remove();
-			        if( tfFinish.getText().length() > 0 && value.getFinish() == null) i.remove();
-			        if( tfDate.getText().length() > 0 && value.getDate() == null) i.remove();			        
 			        
+			        //NULL TESTS
+			        if( tfName.getText().length() > 0 && value.getName() == null){
+			        	i.remove();
+			        	continue;
+			        }
+			        if( cbCategory.getSelectedItem().toString().length() > 0 && value.getCategory() == null) {
+			        	i.remove();
+			        	continue;
+			        }
+			        if( tfBrand.getText().length() > 0 && value.getBrand() == null){
+			        	i.remove();
+			        	continue;
+			        }
+			        if( tfOpCo.getText().length() > 0 && value.getOpco() == null) {
+			        	i.remove();
+			        	continue;
+			        }
+			        if( tfEndMarket.getText().length() > 0 && value.getEndMarket() == null) {
+			        	i.remove();
+			        	continue;
+			        }
+			        if( cbComplexity.getSelectedItem().toString().length() > 0 && value.getComplexity() == null) {
+			        	i.remove();
+			        	continue;
+			        }		        
+			        if( tfStart.getText().length() > 0 && value.getStart() == null) {
+			        	i.remove();
+			        	continue;
+			        }
+			        if( tfFinish.getText().length() > 0 && value.getFinish() == null) {
+			        	i.remove();
+			        	continue;
+			        }
+			        if( tfDate.getText().length() > 0 && value.getDate() == null){
+			        	i.remove();
+			        	continue;
+			        }		        
 			        
+			        // VALUES TESTS
 			        if( tfName.getText().length() > 0 && value.getName() != null){
-			        	if( value.getName().contains(tfName.getText()) == false)
-			            	i.remove(); 
+			        	if( value.getName().contains(tfName.getText()) == false){
+			            	i.remove();
+			            	continue;
+			        	}
 			        } 
 			        if( cbCategory.getSelectedItem().toString().length() > 0 && value.getCategory() != null){ 
-			        	if(value.getCategory().toString().contains(cbCategory.getSelectedItem().toString()) == false)
+			        	if(value.getCategory().equals(Project.ProjectCategory.valueOf(cbCategory.getSelectedItem().toString())) == false){
 			        		i.remove(); 
+			        		continue;
+			        	}
 			        }  
 			        if( tfBrand.getText().length() > 0 && value.getBrand() != null){
-			        	if(value.getBrand().contains(tfBrand.getText()) == false)
+			        	if(value.getBrand().contains(tfBrand.getText()) == false){
 			        		i.remove();
+			        		continue;
+			        	}
 			        } 
 			        if( tfOpCo.getText().length() > 0 && value.getOpco() != null){
-			        	if(value.getOpco().contains(tfOpCo.getText()) == false)
-			        		i.remove(); 
+			        	if(value.getOpco().contains(tfOpCo.getText()) == false){
+			        		i.remove();
+			        		continue;
+			        	}
 			        } 
 			        if( tfEndMarket.getText().length() > 0 && value.getEndMarket() != null){
-			        	if(value.getEndMarket().contains(tfEndMarket.getText()) == false)
-			        		i.remove(); 
+			        	if(value.getEndMarket().contains(tfEndMarket.getText()) == false){
+			        		i.remove();
+			        		continue;
+			        	}
 			        } 
 			        if( cbComplexity.getSelectedItem().toString().length() > 0 && value.getComplexity() != null){
-			        	if(Integer.parseInt(value.getComplexity()) != Integer.parseInt(cbComplexity.getSelectedItem().toString()))
-			        		i.remove(); 
+			        	if(value.getComplexity().equals(Project.ProjectComplexity.valueOf(cbComplexity.getSelectedItem().toString())) == false){
+			        		i.remove();
+			        		continue;
+			        	}
 			        } 
 			        if( tfApproval.getText().length() > 0){
-			        	if(value.isApproval() != Boolean.parseBoolean(tfApproval.getText()))
-			        		i.remove(); 
+			        	if(value.isApproval() != Boolean.parseBoolean(tfApproval.getText())){
+			        		i.remove();
+			        		continue;
+			        	}
 			        } 
 			        if( tfStart.getText().length() > 0 && value.getStart() != null){
-			        	if(value.getStart().toString().contains(tfStart.getText()) == false)
-			        		i.remove(); 
+			        	if(value.getStart().toString().contains(tfStart.getText()) == false){
+			        		i.remove();
+			        		continue;
+			        	}
 			        }
 			        if( tfFinish.getText().length() > 0 && value.getFinish() != null){
-			        	if(value.getFinish().toString().contains(tfFinish.getText()) == false)
+			        	if(value.getFinish().toString().contains(tfFinish.getText()) == false){
 			        		i.remove();
+			        		continue;
+			        	}
 			        }
 			        if( tfDate.getText().length() > 0 && value.getDate() != null){
-			        	if(value.getDate().toString().contains(tfDate.getText()) == false)
-			        		i.remove(); 
+			        	if(value.getDate().toString().contains(tfDate.getText()) == false){
+			        		i.remove();
+			        		continue;
+			        	}
 			        }
-			    }				
+			    }								
 				
-				
+			    // POPULATE TABLE
 				int line = 0, column = 0;
 				for(Project p:mListProject){					
 					mModel.addRow(new Object[]{});
@@ -392,13 +431,37 @@ public class PanelProjectList extends JPanel{
 					
 					line++;
 				}
+				mData.closeConnection();
 			}
 		});
 		
+		//button Edit
+		btnEdit.setPreferredSize(new Dimension(150,50));
+		btnEdit.setVerticalTextPosition(SwingConstants.CENTER);
+		btnEdit.setHorizontalTextPosition(SwingConstants.CENTER);
+		ImageIcon imgEdit = new ImageIcon(getClass().getClassLoader().getResource("resources/btnEdit.png"));
+		btnEdit.setBorder(BorderFactory.createEmptyBorder());
+		btnEdit.setContentAreaFilled(false);
+		btnEdit.setIcon(imgEdit);
 		
+		btnEdit.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent e){
+				
+				int selectedRow = mTable.getSelectedRow();				
+				if(selectedRow > -1){
+					String pid = mTable.getValueAt(selectedRow, 0).toString();
+					//send to edition
+					FrameMain fm = new FrameMain(loggedUser);
+					fm.OpenPanelEdit(loggedUser, pid);
+				}				
+			}
+		});
+				
 		buttonPanel.add(btnDeleteData);	
 		buttonPanel.add(btnLoadData);	
 		buttonPanel.add(btnSearch);
+		buttonPanel.add(btnEdit);
 		c.gridwidth = 3;
 		c.ipady = 0;
 		c.gridy = 2;

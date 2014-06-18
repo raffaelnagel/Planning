@@ -32,6 +32,7 @@ import planning.Planning.DatabaseConnection;
 import planning.Planning.MyListCellRenderer;
 import planning.Planning.People;
 import planning.Planning.PeopleSqlAdapter;
+import planning.Planning.Planning;
 import planning.Planning.Project;
 import planning.Planning.ProjectSqlAdapter;
 import planning.Planning.Team;
@@ -51,12 +52,7 @@ public class PanelProjectTeam extends JPanel{
 		
 		private void refreshListItems(Project p){
 			//add data to list
-			String URL = "jdbc:mysql://localhost:3306/Planning";
-			String login = "root";
-			String pass = "root";
-
-			DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
-			mData.openConnection();
+			DatabaseConnection mData = Planning.OpenConnection();
 			
 			List<Team> mListTeam = new ArrayList<Team>();
 			mListTeam = Team.SelectPeopleTeam(mData, p);
@@ -95,12 +91,7 @@ public class PanelProjectTeam extends JPanel{
 			tfProjectCategory.setEditable(false);
 			
 			//popular comboboxes
-			String URL = "jdbc:mysql://localhost:3306/Planning";
-			String login = "root";
-			String pass = "root";
-
-			final DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
-			mData.openConnection();
+			final DatabaseConnection mData = Planning.OpenConnection();
 			
 			//-- project code
 			final ProjectSqlAdapter mProjectSqlAdapter = new ProjectSqlAdapter();
@@ -124,11 +115,13 @@ public class PanelProjectTeam extends JPanel{
 				public void itemStateChanged(ItemEvent arg0) {
 					int projectCode_index = cbProjectCode.getSelectedIndex();
 					String Code = projectCodes.get(projectCode_index);
+					DatabaseConnection mData = Planning.OpenConnection();
 					List<Project> mListProject = mProjectSqlAdapter.SelectProject(mData, "ProjectCode", Code);
 					Project mProject = mListProject.get(0);
 					tfProjectName.setText(mProject.getName());
 					tfProjectCategory.setText(mProject.getCategory().toString());
 					refreshListItems(mProject);
+					mData.closeConnection();
 				}
 				
 			});
@@ -147,6 +140,7 @@ public class PanelProjectTeam extends JPanel{
 			Collections.sort(employees);
 			
 			cbEmployeeName = new JComboBox(employees.toArray());
+			mData.closeConnection();
 			
 			//-- responsability
 			String[]  listResponsability = {" ","ASA","Blending","Casing_Flavours","Packaging_Materials","PD","PMM","Product_Technology","Statistics","Trainee"};
@@ -175,6 +169,7 @@ public class PanelProjectTeam extends JPanel{
 							int option = JOptionPane.showConfirmDialog(getRootPane(), "Confirm?");
 							
 							if(option == JOptionPane.YES_OPTION){
+								DatabaseConnection mData = Planning.OpenConnection();
 								//get Project								
 								List<Project> mListProject = mProjectSqlAdapter.SelectProject(mData, "ProjectCode", Code);
 								Project mProject = mListProject.get(0);								
@@ -188,6 +183,7 @@ public class PanelProjectTeam extends JPanel{
 								Team.InsertPeopleTeam(mData, mTeam);
 								
 								refreshListItems(mProject);
+								mData.closeConnection();
 							}
 						}
 					}
@@ -203,12 +199,7 @@ public class PanelProjectTeam extends JPanel{
 					@Override
 					public void actionPerformed(ActionEvent e){
 						//remover pessoa da tabela de Team 
-						String URL = "jdbc:mysql://localhost:3306/Planning";
-						String login = "root";
-						String pass = "root";
-
-						DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
-						mData.openConnection();
+						DatabaseConnection mData = Planning.OpenConnection();
 						
 						if(listEmployee.getSelectedIndex() > -1){							
 							
@@ -243,7 +234,7 @@ public class PanelProjectTeam extends JPanel{
 								refreshListItems(mProject);
 							}
 						}
-						
+						mData.closeConnection();
 					}
 				});
 			//INTERFACE DEFINITIONS

@@ -8,15 +8,19 @@ import planning.Interface.FrameMain;
 
 public class Planning {
 
-			
-	public static void main(String args[]){
-		
+	public static DatabaseConnection OpenConnection(){
 		String URL = "jdbc:mysql://localhost:3306/Planning";
 		String login = "root";
 		String pass = "root";
 		
 		DatabaseConnection mData = new DatabaseConnection(URL, login, pass);		
 		mData.openConnection();
+		return(mData);
+	}
+			
+	public static void main(String args[]){
+		
+		DatabaseConnection mData = Planning.OpenConnection();
 		
 		if(!mData.isConnected()){
 			JOptionPane.showMessageDialog(null, "Database Not Found.", "Error", JOptionPane.ERROR_MESSAGE);

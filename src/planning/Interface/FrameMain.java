@@ -26,6 +26,7 @@ import planning.Planning.DatabaseConnection;
 import planning.Planning.People;
 import planning.Planning.Plan;
 import planning.Planning.PlanSqlAdapter;
+import planning.Planning.Planning;
 import planning.Planning.Project;
 import planning.Planning.ProjectSqlAdapter;
 
@@ -44,7 +45,8 @@ public class FrameMain extends JFrame{
 	//Menu Project
 	private JMenu menuProject = new JMenu();
 	private JMenuItem menuNewProject = new JMenuItem();
-	private JMenuItem menuListProject = new JMenuItem(); 
+	private JMenuItem menuEditProject = new JMenuItem();
+	private JMenuItem menuListProject = new JMenuItem();
 	private JMenuItem menuTeamProject = new JMenuItem();
 	//Menu People
 	private JMenu menuPeople = new JMenu();
@@ -56,14 +58,16 @@ public class FrameMain extends JFrame{
 	private JMenuItem menuClose = new JMenuItem(); 
 	private JMenuItem menuMain = new JMenuItem(); 
 	
+	public void OpenPanelEdit(People loggedUser, String pcode){
+		getContentPane().removeAll();
+        PanelProjectEdit fmEditProject = new PanelProjectEdit(loggedUser, pcode);
+        getContentPane().add(fmEditProject);
+        getContentPane().validate();
+        getContentPane().repaint();
+	}
 	
 	private void RefreshIcons(People loggedUser){
-		String URL = "jdbc:mysql://localhost:3306/Planning";
-		String login = "root";
-		String pass = "root";
-
-		DatabaseConnection mData = new DatabaseConnection(URL, login, pass);	
-		mData.openConnection();
+		DatabaseConnection mData = Planning.OpenConnection();
 		List<Project> mListProject = new ArrayList<Project>();
 		ProjectSqlAdapter mProjectSqlAdapter = new ProjectSqlAdapter();
 		mListProject = mProjectSqlAdapter.SelectProject(mData, loggedUser);
@@ -91,7 +95,7 @@ public class FrameMain extends JFrame{
 		setSize(940,680);		
 		setTitle("Planning System");
 		setLocationRelativeTo(null);		
-		setResizable(false);
+		//setResizable(false);
 		setLayout(new BorderLayout());
 		this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);		
 		this.setVisible(true);		
@@ -106,6 +110,13 @@ public class FrameMain extends JFrame{
                 getContentPane().add(fmNewProject);
                 getContentPane().validate();
                 getContentPane().repaint();
+            }
+        });
+		menuEditProject.setText("Edit Project");
+		menuEditProject.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent event) {
+            	OpenPanelEdit(loggedUser, null);
             }
         });
 		menuListProject.setText("Projects List");
@@ -132,6 +143,7 @@ public class FrameMain extends JFrame{
         });
 		menuProject.setText("Project");
 		menuProject.add(menuNewProject);
+		menuProject.add(menuEditProject);
 		menuProject.add(menuListProject);
 		menuProject.add(menuTeamProject);
 			

@@ -124,6 +124,16 @@ public class PeopleSqlAdapter {
 		return false;
 	}
 	
+	public boolean TestCodeAvailability(DatabaseConnection mConnection, String people_code){
+		
+		List<People> mListPeople = SelectPeople(mConnection);
+		for(People p:mListPeople){
+			if(p.getCode().equals(people_code)) 
+				return false;
+		}
+		return true;
+	}
+	
 	public boolean UpdatePeople(DatabaseConnection mConnection, People oldPeople, People newPeople){
 		
 		if(mConnection.isConnected()){	
