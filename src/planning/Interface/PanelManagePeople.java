@@ -30,11 +30,10 @@ import javax.swing.border.TitledBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
-import planning.Planning.DatabaseConnection;
-import planning.Planning.MyListCellRenderer;
-import planning.Planning.People;
-import planning.Planning.PeopleSqlAdapter;
-import planning.Planning.Planning;
+import planning.Data.People;
+import planning.Data.Planning;
+import planning.DataAdapter.DatabaseConnection;
+import planning.DataAdapter.PeopleSqlAdapter;
 
 
 
@@ -53,10 +52,10 @@ public class PanelManagePeople extends JPanel{
 
 	private void refreshListItems(){
 		//add data to list
-		PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
+		
 		DatabaseConnection mData = Planning.OpenConnection();
 		List<People> mListPeople = new ArrayList<People>();
-		mListPeople = mPeopleSqlAdapter.SelectPeople(mData);
+		mListPeople = PeopleSqlAdapter.selectPeople(mData);
 		
 		listPeopleModel.clear();
 		List<String> employees = new ArrayList<String>();
@@ -135,8 +134,7 @@ public class PanelManagePeople extends JPanel{
 			public void actionPerformed(ActionEvent e){
 				
 				DatabaseConnection mData = Planning.OpenConnection();
-				
-				PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
+						
 				
 				if(tfName.getText().length() > 0){
 					int option = JOptionPane.showConfirmDialog(getRootPane(), "Confirm?");
@@ -148,11 +146,11 @@ public class PanelManagePeople extends JPanel{
 						newPeople.setCode(tfCode.getText().toUpperCase());
 						newPeople.setWorkgroup(tfWorkgroup.getText().toUpperCase());
 						
-						if(mPeopleSqlAdapter.Exists(mData, newPeople) == true){
+						if(PeopleSqlAdapter.exists(mData, newPeople) == true){
 							JOptionPane.showMessageDialog(getRootPane(), "Employee already exists!");
 						}else{
-							if(mPeopleSqlAdapter.TestCodeAvailability(mData, newPeople.getCode())){
-								if(mPeopleSqlAdapter.InsertPeople(mData, newPeople)){
+							if(PeopleSqlAdapter.testCodeAvailability(mData, newPeople.getCode())){
+								if(PeopleSqlAdapter.insertPeople(mData, newPeople)){
 									JOptionPane.showMessageDialog(getRootPane(), "Employee sucessfully added");
 									refreshListItems();
 								}else{
@@ -203,11 +201,10 @@ public class PanelManagePeople extends JPanel{
                   try{
                 	  tfPeopleName.setText(listPeople.getSelectedValue().toString());                  
                   
-	  				  DatabaseConnection mData = Planning.OpenConnection();
-	  				  PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
+	  				  DatabaseConnection mData = Planning.OpenConnection();	  				  
 	  				  
 	  				  List<People> mListPeople = new ArrayList<People>();
-	  				  mListPeople = mPeopleSqlAdapter.SelectPeople(mData, "Name", listPeople.getSelectedValue().toString());
+	  				  mListPeople = PeopleSqlAdapter.selectPeople(mData, "Name", listPeople.getSelectedValue().toString());
 	  				  tfPeopleCode.setText(mListPeople.get(0).getCode());
 	  				  tfPeopleWorkgroup.setText(mListPeople.get(0).getWorkgroup());
 	  				  mData.closeConnection();
@@ -258,12 +255,12 @@ public class PanelManagePeople extends JPanel{
 			@Override
 			public void actionPerformed(ActionEvent e){
 				DatabaseConnection mData = Planning.OpenConnection();
-				PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
+				
 				People mPeople = new People(tfPeopleName.getText(), tfPeopleCode.getText());
 				int option = JOptionPane.showConfirmDialog(getRootPane(), "Confirm?");
 				
 				if(option == JOptionPane.YES_OPTION){
-					if(mPeopleSqlAdapter.DeletePeople(mData, mPeople)){
+					if(PeopleSqlAdapter.deletePeople(mData, mPeople)){
 						JOptionPane.showMessageDialog(getRootPane(), "Employee sucessfully deleted");					
 						refreshListItems();
 						listPeople.setSelectedIndex(listPeople.getSelectedIndex() + 1);
@@ -287,9 +284,7 @@ public class PanelManagePeople extends JPanel{
 		btnEdit.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent e){
-				DatabaseConnection mData = Planning.OpenConnection();
-				
-				PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();				
+				DatabaseConnection mData = Planning.OpenConnection();			
 				
 				int option = JOptionPane.showConfirmDialog(getRootPane(), "Confirm?");
 				
@@ -302,11 +297,11 @@ public class PanelManagePeople extends JPanel{
 					
 					People oldPeople = new People();
 					List<People> mListPeople = new ArrayList<People>();
-	  			    mListPeople = mPeopleSqlAdapter.SelectPeople(mData, "Name", listPeople.getSelectedValue().toString());
+	  			    mListPeople = PeopleSqlAdapter.selectPeople(mData, "Name", listPeople.getSelectedValue().toString());
 	  			    oldPeople = mListPeople.get(0);
 	  			    
-					if(mPeopleSqlAdapter.Exists(mData, oldPeople) == true){						
-		  			    if(mPeopleSqlAdapter.UpdatePeople(mData, oldPeople, newPeople)){
+					if(PeopleSqlAdapter.exists(mData, oldPeople) == true){						
+		  			    if(PeopleSqlAdapter.updatePeople(mData, oldPeople, newPeople)){
 							JOptionPane.showMessageDialog(getRootPane(), "Employee sucessfully edited");
 							refreshListItems();
 						}else{

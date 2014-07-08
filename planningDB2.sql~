@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS `Planning`.`People` (
   `idPeople` INT NOT NULL AUTO_INCREMENT,
   `Name` VARCHAR(45) NULL,
   `Code` CHAR(3) NULL,
+  `Workgroup` VARCHAR(40) NULL,
   UNIQUE INDEX `Code_UNIQUE` (`Code` ASC),
   PRIMARY KEY (`idPeople`),
   UNIQUE INDEX `idPeople_UNIQUE` (`idPeople` ASC))
@@ -50,6 +51,7 @@ CREATE TABLE IF NOT EXISTS `Planning`.`Team` (
   `idPeople` INT NOT NULL,
   `idProject`  INT(4) UNSIGNED ZEROFILL NOT NULL,
   `Responsability` VARCHAR(45) NULL,
+  `Workgroup` VARCHAR(40) NULL,
   PRIMARY KEY (`idPeople`, `idProject`),
   INDEX `fk_People_has_Project_Project1_idx` (`idProject` ASC),
   INDEX `fk_People_has_Project_People1_idx` (`idPeople` ASC),
@@ -66,40 +68,6 @@ CREATE TABLE IF NOT EXISTS `Planning`.`Team` (
 ENGINE = InnoDB;
 
 
-
--- -----------------------------------------------------
--- Table `Planning`.`Resource`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Planning`.`Resource` (
-  `idResource` INT NOT NULL AUTO_INCREMENT,
-  `Name` VARCHAR(45) NULL,
-  `Type` VARCHAR(45) NULL,
-  PRIMARY KEY (`idResource`))
-ENGINE = InnoDB;
-
-
--- -----------------------------------------------------
--- Table `Planning`.`ResourceAllocation`
--- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Planning`.`ResourceAllocation` (
-  `idProject` INT(4) UNSIGNED ZEROFILL NOT NULL,
-  `idResource` INT NOT NULL,
-  `Quantity` FLOAT NULL,
-  PRIMARY KEY (`idProject`, `idResource`),
-  INDEX `fk_Project_has_Resource_Resource1_idx` (`idResource` ASC),
-  INDEX `fk_Project_has_Resource_Project1_idx` (`idProject` ASC),
-  CONSTRAINT `fk_Project_has_Resource_Project1`
-    FOREIGN KEY (`idProject`)
-    REFERENCES `Planning`.`Project` (`idProject`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION,
-  CONSTRAINT `fk_Project_has_Resource_Resource1`
-    FOREIGN KEY (`idResource`)
-    REFERENCES `Planning`.`Resource` (`idResource`)
-    ON DELETE CASCADE
-    ON UPDATE NO ACTION)
-ENGINE = InnoDB;
-
 -- -----------------------------------------------------
 -- Table `Planning`.`Project`
 -- -----------------------------------------------------
@@ -107,50 +75,183 @@ CREATE TABLE IF NOT EXISTS `Planning`.`Project` (
   `idProject` INT(4) UNSIGNED ZEROFILL NOT NULL AUTO_INCREMENT,
   `ProjectCode` VARCHAR(45) NULL,
   `Name` VARCHAR(45) NULL,
-  `Category` VARCHAR(45) NULL,
-  `Brand` VARCHAR(45) NULL,
-  `OpCo` VARCHAR(45) NULL,
-  `EndMarket` VARCHAR(45) NULL,
+  `idPitCode` INT  NULL,
+  `idMainProject` INT  NULL,
+  `idCategory` INT  NULL,
+  `idBrand` INT  NULL,
+  `idOpCo` INT  NULL,
+  `idEndMarket` INT  NULL,
   `Complexity` VARCHAR(10) NULL,
   `Approval` VARCHAR(3) NULL,
   `Start` TIMESTAMP NULL,
   `Finish` TIMESTAMP NULL,
   `Date` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`idProject`),
+  INDEX `fk_Project_PitCode1_idx` (`idPitCode` ASC),
+  INDEX `fk_Project_MainProject_idx` (`idMainProject` ASC),
+  INDEX `fk_Project_ProjectCategory_idx` (`idCategory` ASC),
+  INDEX `fk_Project_Brand_idx` (`idBrand` ASC),
+  INDEX `fk_Project_OpCo_idx` (`idOpCo` ASC),
+  INDEX `fk_Project_EndMarket_idx` (`idEndMarket` ASC),
   UNIQUE INDEX `idProject_UNIQUE` (`idProject` ASC),
-  UNIQUE INDEX `ProjectCode_UNIQUE` (`ProjectCode` ASC))   
+  UNIQUE INDEX `ProjectCode_UNIQUE` (`ProjectCode` ASC),
+  CONSTRAINT `fk_Project_PitCode1`
+    FOREIGN KEY (`idPitCode`)
+    REFERENCES `Planning`.`PitCode` (`idPitCode`)
+    ON DELETE SET NULL
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Project_MainProject`
+    FOREIGN KEY (`idMainProject`)
+    REFERENCES `Planning`.`MainProject` (`idMainProject`)
+    ON DELETE SET NULL
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Project_ProjectCategory`
+    FOREIGN KEY (`idCategory`)
+    REFERENCES `Planning`.`ProjectCategory` (`idProjectCategory`)
+    ON DELETE SET NULL
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Project_Brand`
+    FOREIGN KEY (`idBrand`)
+    REFERENCES `Planning`.`Brand` (`idBrand`)
+    ON DELETE SET NULL
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Project_OpCo`
+    FOREIGN KEY (`idOpCo`)
+    REFERENCES `Planning`.`OpCo` (`idOpCo`)
+    ON DELETE SET NULL
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Project_EndMarket`
+    FOREIGN KEY (`idEndMarket`)
+    REFERENCES `Planning`.`EndMarket` (`idEndMarket`)
+    ON DELETE SET NULL
+    ON UPDATE NO ACTION
+  )   
 ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
--- Table `Planning`.`Plan`
+-- Table `Planning`.`Schedule`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Planning`.`Plan` (
-  `idPlan` INT NOT NULL AUTO_INCREMENT,
-  `idProject` INT(4) UNSIGNED ZEROFILL NOT NULL,
+CREATE TABLE IF NOT EXISTS `Planning`.`Schedule` (
+  `idSchedule` INT NOT NULL AUTO_INCREMENT,
+  `idProject` INT(4) UNSIGNED ZEROFILL NOT NULL,  
+  `idActivity` INT NOT NULL,  
+  `DemandedQtty` INT(10) NULL,  
+  `Cycle` INT(10) NULL,
+  `Notes` VARCHAR(60) NULL,
   `Date` TIMESTAMP NULL,  
-  `ActionPlan` VARCHAR(60) NULL,
-  PRIMARY KEY (`idPlan`, `idProject`),  
-  CONSTRAINT `fk_Plan_Project1`
+  `Status` VARCHAR(20) NULL,
+  `AccomplishedDate` TIMESTAMP NULL,
+  
+  PRIMARY KEY (`idSchedule`, `idProject`),  
+  CONSTRAINT `fk_Schedule_Project1`
     FOREIGN KEY (`idProject`)
     REFERENCES `Planning`.`Project` (`idProject`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+ CONSTRAINT `fk_Schedule_Activity1`
+    FOREIGN KEY (`idActivity`)
+    REFERENCES `Planning`.`Activity` (`idActivity`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
 
+-- -----------------------------------------------------
+-- Table `Planning`.`Activity`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Planning`.`Activity` (
+  `idActivity` INT NOT NULL AUTO_INCREMENT,
+  `Site` VARCHAR(20) NULL,
+  `Area` VARCHAR(20) NULL,
+  `Stage` VARCHAR(40) NULL,
+  `Action` VARCHAR(60) NULL,  
+  `Unit` VARCHAR(40) NULL,  
+  `LeadTime` INT(10) NULL,
+  
+  PRIMARY KEY (`idActivity`))
+ENGINE = InnoDB;
 
 -- -----------------------------------------------------
--- Table `Planning`.`Comments`
+-- Table `Planning`.`Brand`
 -- -----------------------------------------------------
-CREATE TABLE IF NOT EXISTS `Planning`.`Comments` (
-  `idComments` INT NOT NULL AUTO_INCREMENT,
-  `idProject` INT(4) UNSIGNED ZEROFILL NOT NULL,
+CREATE TABLE IF NOT EXISTS `Planning`.`Brand` (
+  `idBrand` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(80) NULL,
+  `Code` VARCHAR(10) NULL,
+  `Range` VARCHAR(40) NULL,
+  UNIQUE INDEX `Code_UNIQUE` (`Code` ASC),
+  PRIMARY KEY (`idBrand`),
+  UNIQUE INDEX `idBrand_UNIQUE` (`idBrand` ASC))
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `Planning`.`ProjectCategory`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Planning`.`ProjectCategory` (
+  `idProjectCategory` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(80) NULL,  
+  PRIMARY KEY (`idProjectCategory`),
+  UNIQUE INDEX `idProjectCategory_UNIQUE` (`idProjectCategory` ASC))
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `Planning`.`OpCo`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Planning`.`OpCo` (
+  `idOpCo` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(80) NULL,  
+  PRIMARY KEY (`idOpCo`),
+  UNIQUE INDEX `idOpCo_UNIQUE` (`idOpCo` ASC))
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `Planning`.`EndMarket`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Planning`.`EndMarket` (
+  `idEndMarket` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(80) NULL,  
+  PRIMARY KEY (`idEndMarket`),
+  UNIQUE INDEX `idEndMarket_UNIQUE` (`idEndMarket` ASC))
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `Planning`.`MainProject`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Planning`.`MainProject` (
+  `idMainProject` INT NOT NULL AUTO_INCREMENT,
+  `Name` VARCHAR(80) NULL,  
+  PRIMARY KEY (`idMainProject`),
+  UNIQUE INDEX `idMainProject_UNIQUE` (`idMainProject` ASC))
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `Planning`.`PitCode`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Planning`.`PitCode` (
+  `idPitCode` INT NOT NULL AUTO_INCREMENT,
+  `Code` VARCHAR(80) NULL,  
+  PRIMARY KEY (`idPitCode`),
+  UNIQUE INDEX `idPitCode_UNIQUE` (`idPitCode` ASC))
+ENGINE = InnoDB;
+
+-- -----------------------------------------------------
+-- Table `Planning`.`Message`
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `Planning`.`Message` (
+  `idMessage` INT NOT NULL AUTO_INCREMENT,
+  `idPeopleTo` INT NOT NULL ,
+  `idPeopleFrom` INT NOT NULL ,
   `Date` TIMESTAMP NULL,
-  `Comment` VARCHAR(80) NULL,
-  PRIMARY KEY (`idComments`, `idProject`),
-  CONSTRAINT `fk_Comments_Project1`
-    FOREIGN KEY (`idProject`)
-    REFERENCES `Planning`.`Project` (`idProject`)
+  `Text` VARCHAR(80) NULL,
+  PRIMARY KEY (`idMessage`, `idPeopleTo`, `idPeopleFrom`),
+  CONSTRAINT `fk_Message_PeopleTo1`
+    FOREIGN KEY (`idPeopleTo`)
+    REFERENCES `Planning`.`People` (`idPeople`)
+    ON DELETE CASCADE
+    ON UPDATE NO ACTION,
+  CONSTRAINT `fk_Message_PeopleFrom1`
+    FOREIGN KEY (`idPeopleFrom`)
+    REFERENCES `Planning`.`People` (`idPeople`)
     ON DELETE CASCADE
     ON UPDATE NO ACTION)
 ENGINE = InnoDB;
@@ -175,60 +276,652 @@ INSERT INTO People(Name, Code) VALUES('Luciana Castro', 'LAC');
 INSERT INTO People(Name, Code) VALUES('Estefani Silveira', 'ETS');
 INSERT INTO People(Name, Code) VALUES('Luciana Brasil', 'LCB');
 
-INSERT INTO Login(idPeople, User, Password, PermittionLevel) VALUES(1, 'admin', 'admin', 0);
-INSERT INTO Login(idPeople, User, Password, PermittionLevel) VALUES(2, 'jojo', '12345', 1);
-INSERT INTO Login(idPeople, User, Password, PermittionLevel) VALUES(3, 'user1', '12345', 1);
-INSERT INTO Login(idPeople, User, Password, PermittionLevel) VALUES(4, 'user2', '12345', 1);
-INSERT INTO Login(idPeople, User, Password, PermittionLevel) VALUES(5, 'user3', '12345', 1);
-INSERT INTO Login(idPeople, User, Password, PermittionLevel) VALUES(6, 'user4', '12345', 1);
-INSERT INTO Login(idPeople, User, Password, PermittionLevel) VALUES(7, 'user5', '12345', 1);
+INSERT INTO Login(idPeople, User, Password, PermissionLevel) VALUES(1, 'admin', 'admin', 0);
+INSERT INTO Login(idPeople, User, Password, PermissionLevel) VALUES(2, 'jojo', '12345', 1);
+INSERT INTO Login(idPeople, User, Password, PermissionLevel) VALUES(3, 'user1', '12345', 1);
+INSERT INTO Login(idPeople, User, Password, PermissionLevel) VALUES(4, 'user2', '12345', 1);
+INSERT INTO Login(idPeople, User, Password, PermissionLevel) VALUES(5, 'user3', '12345', 1);
+INSERT INTO Login(idPeople, User, Password, PermissionLevel) VALUES(6, 'user4', '12345', 1);
+INSERT INTO Login(idPeople, User, Password, PermissionLevel) VALUES(7, 'user5', '12345', 1);
 
 SELECT * FROM People JOIN Login ON People.idPeople = Login.idPeople;
 
+--Categorys
+INSERT INTO ProjectCategory(Name) VALUES('CONSUMER');
+INSERT INTO ProjectCategory(Name) VALUES('REGULATION');
+INSERT INTO ProjectCategory(Name) VALUES('BUSINESS');
+INSERT INTO ProjectCategory(Name) VALUES('BAU');
+INSERT INTO ProjectCategory(Name) VALUES('PEOPLE');
+INSERT INTO ProjectCategory(Name) VALUES('KNOWLEDGE');
+
 -- Projects
-INSERT INTO Project(Name, Category, Brand, OpCo, EndMarket, Complexity) VALUES('Projeto 1', 'BAU', 'Marlboro', 'BR', 'BR', '1');
-INSERT INTO Project(Name, Category, Brand, OpCo, EndMarket, Complexity) VALUES('Projeto 2', 'BAU', 'Marlboro', 'BR', 'BR', '1');
+INSERT INTO Project(Name, idPitCode, idMainProject, idCategory, idBrand, idOpCo, idEndMarket, Complexity) VALUES('Projeto 1', 1, 1,  1, 1, 1, 1, 'CAP1');
+INSERT INTO Project(Name, idPitCode, idMainProject, idCategory, idBrand, idOpCo, idEndMarket, Complexity) VALUES('Projeto 2', 2, 3,  2, 2, 2, 2, 'CAP1');
+INSERT INTO Project(Name, idPitCode, idMainProject, idCategory, idBrand, idOpCo, idEndMarket, Complexity) VALUES('Projeto 3', 3, 5,  3, 3, 3, 3, 'CAP3');
+INSERT INTO Project(Name, idPitCode, idMainProject, idCategory, idBrand, idOpCo, idEndMarket, Complexity) VALUES('Projeto 4', 4, 9,  1, 4, 4, 4, 'CAP1');
+INSERT INTO Project(Name, idPitCode, idMainProject, idCategory, idBrand, idOpCo, idEndMarket, Complexity) VALUES('Projeto 5', 5, 14, 2, 5, 5, 5, 'CAP1');
+INSERT INTO Project(Name, idPitCode, idMainProject, idCategory, idBrand, idOpCo, idEndMarket, Complexity) VALUES('Projeto 6', 6, 20, 3, 6, 6, 6, 'CAP2');
 
 -- update projects code
 UPDATE Project SET ProjectCode = CONCAT(YEAR(Date), '_', idProject);
 
 
--- resources
-INSERT INTO Resource(Name, Type) VALUES('Analysis','Statistics');
-INSERT INTO Resource(Name, Type) VALUES('Sampling','RCPA');
-INSERT INTO Resource(Name, Type) VALUES('Tobacco','PPI');
-
 -- team
-INSERT INTO Team(idProject, idPeople, Responsability) VALUES(1, 2, 'Statistic');
-INSERT INTO Team(idProject, idPeople, Responsability) VALUES(1, 5, 'LAS');
-INSERT INTO Team(idProject, idPeople, Responsability) VALUES(1, 6, 'Smoke_Routine');
-INSERT INTO Team(idProject, idPeople, Responsability) VALUES(1, 7, 'TRM');
-
-INSERT INTO Team(idProject, idPeople, Responsability) VALUES(2, 3, 'Statistic');
+INSERT INTO Team(idProject, idPeople, Responsability) VALUES(2, 2, 'Statistic');
 INSERT INTO Team(idProject, idPeople, Responsability) VALUES(2, 5, 'LAS');
 INSERT INTO Team(idProject, idPeople, Responsability) VALUES(2, 6, 'Smoke_Routine');
+INSERT INTO Team(idProject, idPeople, Responsability) VALUES(2, 7, 'TRM');
 
--- plan
-INSERT INTO Plan(idProject, Date, ActionPlan) VALUES(1, NOW(), 'Sampling');
-INSERT INTO Plan(idProject, Date, ActionPlan) VALUES(1, NOW(), 'Packaging');
-INSERT INTO Plan(idProject, Date, ActionPlan) VALUES(2, NOW(), 'Send to LAT');
-INSERT INTO Plan(idProject, Date, ActionPlan) VALUES(2, NOW(), 'Receive From LAT');
-INSERT INTO Plan(idProject, Date, ActionPlan) VALUES(2, NOW(), 'Send to RCPA');
+INSERT INTO Team(idProject, idPeople, Responsability) VALUES(3, 3, 'Statistic');
+INSERT INTO Team(idProject, idPeople, Responsability) VALUES(3, 5, 'LAS');
+INSERT INTO Team(idProject, idPeople, Responsability) VALUES(3, 6, 'Smoke_Routine');
 
--- Comments
-INSERT INTO Comments(idProject, Date, Comment) VALUES(1, NOW(), 'first comment of Projeto 1');
-INSERT INTO Comments(idProject, Date, Comment) VALUES(1, NOW(), 'second comment of Projeto 1');
-INSERT INTO Comments(idProject, Date, Comment) VALUES(1, NOW(), 'another comment of Projeto 1');
-INSERT INTO Comments(idProject, Date, Comment) VALUES(1, NOW(), 'another one comment of Projeto 1');
-INSERT INTO Comments(idProject, Date, Comment) VALUES(1, NOW(), 'last comment of Projeto 1');
-
-INSERT INTO Comments(idProject, Date, Comment) VALUES(2, NOW(), 'unique comment of Projeto 2');
+--activity
+INSERT INTO Activity(Site, Area, Stage, Action, Unit, LeadTime) VALUES()
+-- schedules
+INSERT INTO Schedule(idProject, idActivity, DemandedQtty, Cycle, Notes, Date, Status, AccomplishedData) VALUES()
 
 
 -- join
 SELECT * FROM People JOIN Team ON People.idPeople = Team.idPeople JOIN Project ON Team.idProject = Project.idProject;
 
 SELECT Name, Plan.Date, Plan.ActionPlan, Comments.Comment FROM Project JOIN Plan ON Project.idProject = Plan.idProject JOIN Comments ON Project.idProject = Comments.idProject;
+
+
+
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('ARGENTINA','PILAR','Manufactory','Prototype Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('ARGENTINA','PILAR','Manufactory','CPT Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('ARGENTINA','PILAR','Manufactory','Product Pack','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('ARGENTINA','PILAR','Manufactory','Product','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('ARGENTINA','PILAR','Manufactory','Full Operaction','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('ARGENTINA','PILAR','Manufactory','MQS1 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('ARGENTINA','PILAR','Manufactory','MQS2 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('ARGENTINA','PILAR','Manufactory','MQS3 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('ARGENTINA','PILAR','Manufactory','Product Test Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('ARGENTINA','PILAR','Manufactory','First Production Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('ARGENTINA','PILAR','Manufactory','Other','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('ARGENTINA','PILAR','Manufactory','SKU List',NULL,NULL);
+
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','POA','Manufactory','Prototype Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','POA','Manufactory','CPT Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','POA','Manufactory','Product Pack','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','POA','Manufactory','Product','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','POA','Manufactory','Full Operaction','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','POA','Manufactory','MQS1 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','POA','Manufactory','MQS2 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','POA','Manufactory','MQS3 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','POA','Manufactory','Product Test Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','POA','Manufactory','First Production Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','POA','Manufactory','Other','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','UDI','Manufactory','Prototype Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','UDI','Manufactory','CPT Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','UDI','Manufactory','Product Pack','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','UDI','Manufactory','Product','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','UDI','Manufactory','Full Operaction','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','UDI','Manufactory','MQS1 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','UDI','Manufactory','MQS2 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','UDI','Manufactory','MQS3 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','UDI','Manufactory','Product Test Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','UDI','Manufactory','First Production Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('BRAZIL','UDI','Manufactory','Other','Other',NULL);
+
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CANADA','CANADA','Analyses','Smoke and Physical Routine','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CANADA','CANADA','Analyses','Tobacco Routine','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CANADA','CANADA','Analyses','Other Routine or Portifolio','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CANADA','CANADA','Analyses','Specific Analyses','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CANADA','CANADA','Analyses','Other Activities','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CANADA','CANADA','Sensory Evaluation','Sensodus Panel',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CANADA','CANADA','Sensory Evaluation','Expert Panel',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','CASABLANCA','Manufactory','Prototype Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','CASABLANCA','Manufactory','CPT Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','CASABLANCA','Manufactory','Product Pack','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','CASABLANCA','Manufactory','Product','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','CASABLANCA','Manufactory','Full Operaction','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','CASABLANCA','Manufactory','MQS1 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','CASABLANCA','Manufactory','MQS2 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','CASABLANCA','Manufactory','MQS3 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','CASABLANCA','Manufactory','Product Test Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','CASABLANCA','Manufactory','First Production Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','CASABLANCA','Manufactory','Other','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','CASABLANCA','Manufactory','Product Ventilation','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','CASABLANCA','Manufactory','SKU List',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','LAB','Analyses','Smoke and Physical Routine','Sample',8);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','LAB','Analyses','Tobacco Routine','Sample',8);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','LAB','Analyses','Other Routine or Portifolio','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','LAB','Analyses','Specific Analyses','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CHILE','LAB','Analyses','Other Activities','Other',NULL);
+
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('COLOMBIA','BOSA','Manufactory','Prototype Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('COLOMBIA','BOSA','Manufactory','CPT Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('COLOMBIA','BOSA','Manufactory','Product Pack','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('COLOMBIA','BOSA','Manufactory','Product','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('COLOMBIA','BOSA','Manufactory','Full Operaction','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('COLOMBIA','BOSA','Manufactory','MQS1 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('COLOMBIA','BOSA','Manufactory','MQS2 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('COLOMBIA','BOSA','Manufactory','MQS3 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('COLOMBIA','BOSA','Manufactory','Product Test Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('COLOMBIA','BOSA','Manufactory','First Production Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('COLOMBIA','BOSA','Manufactory','Other','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('COLOMBIA','BOSA','Manufactory','Product Ventilation','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('COLOMBIA','BOSA','Manufactory','SKU List',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CUBA','BRASCUBA','Manufactory','Prototype Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CUBA','BRASCUBA','Manufactory','CPT Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CUBA','BRASCUBA','Manufactory','Product Pack','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CUBA','BRASCUBA','Manufactory','Product','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CUBA','BRASCUBA','Manufactory','Full Operaction','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CUBA','BRASCUBA','Manufactory','MQS1 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CUBA','BRASCUBA','Manufactory','MQS2 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CUBA','BRASCUBA','Manufactory','MQS3 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CUBA','BRASCUBA','Manufactory','Product Test Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CUBA','BRASCUBA','Manufactory','First Production Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('CUBA','BRASCUBA','Manufactory','Other','Other',NULL);
+
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('GR&D','GR&D','Sensory Evaluation','Sensodus Panel',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('GR&D','GR&D','Sensory Evaluation','Expert Panel',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('GR&D','GR&D','Sensory Evaluation','ORT Panel',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('GR&D','PRODUCT STEWARDSHIP','Regulatory Disclosure','Ingredients Disclosure',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('GR&D','LAB','Analyses','Smoke and Physical Routine','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('GR&D','LAB','Analyses','Tobacco Routine','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('GR&D','LAB','Analyses','Other Routine or Portifolio','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('GR&D','LAB','Analyses','Specific Analyses','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('GR&D','LAB','Analyses','Other Activities','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','LAB','Analyses','Smoke and Physical Routine','Sample',8);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','LAB','Analyses','Tobacco Routine','Sample',8);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','LAB','Analyses','Other Routine or Portifolio','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','LAB','Analyses','Specific Analyses','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','LAB','Analyses','Other Activities','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','SAN PEDRO SULA','Manufactory','Prototype Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','SAN PEDRO SULA','Manufactory','CPT Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','SAN PEDRO SULA','Manufactory','Product Pack','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','SAN PEDRO SULA','Manufactory','Product','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','SAN PEDRO SULA','Manufactory','Full Operaction','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','SAN PEDRO SULA','Manufactory','MQS1 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','SAN PEDRO SULA','Manufactory','MQS2 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','SAN PEDRO SULA','Manufactory','MQS3 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','SAN PEDRO SULA','Manufactory','Product Test Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','SAN PEDRO SULA','Manufactory','First Production Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','SAN PEDRO SULA','Manufactory','Other','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','SAN PEDRO SULA','Manufactory','Product Ventilation','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('HONDURAS','SAN PEDRO SULA','Manufactory','SKU List',NULL,NULL);
+
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('JTI','JTI','Sensory Evaluation','Sensodus Panel',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','LAB','Analyses','Smoke and Physical Routine','Sample',8);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','LAB','Analyses','Tobacco Routine','Sample',8);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','LAB','Analyses','Other Routine or Portifolio','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','LAB','Analyses','Specific Analyses','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','LAB','Analyses','Other Activities','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','MONTERREY','Manufactory','Prototype Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','MONTERREY','Manufactory','CPT Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','MONTERREY','Manufactory','Product Pack','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','MONTERREY','Manufactory','Product','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','MONTERREY','Manufactory','Full Operaction','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','MONTERREY','Manufactory','MQS1 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','MONTERREY','Manufactory','MQS2 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','MONTERREY','Manufactory','MQS3 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','MONTERREY','Manufactory','Product Test Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','MONTERREY','Manufactory','First Production Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','MONTERREY','Manufactory','Other','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','MONTERREY','Manufactory','Product Ventilation','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('MEXICO','MONTERREY','Manufactory','SKU List',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('OTHER','OTHER','Other','Other','Other',NULL);
+
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_ASPAC','LAB','Analyses','Smoke and Physical Routine','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_ASPAC','LAB','Analyses','Tobacco Routine','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_ASPAC','LAB','Analyses','Other Routine or Portifolio','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_ASPAC','LAB','Analyses','Specific Analyses','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_ASPAC','LAB','Analyses','Other Activities','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_ASPAC','PC_ASPAC','Sensory Evaluation','Sensodus Panel',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_E','LAB','Analyses','Smoke and Physical Routine','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_E','LAB','Analyses','Tobacco Routine','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_E','LAB','Analyses','Other Routine or Portifolio','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_E','LAB','Analyses','Hoffmann Analyses','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_E','LAB','Analyses','Specific Analyses','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_E','LAB','Analyses','Other Activities','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_E','PC_E','Sensory Evaluation','Sensodus Panel',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_E','PC_E','Sensory Evaluation','Expert Panel',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_E','PC_E','Sensory Evaluation','ORT Panel',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_EMMEA','LAB','Analyses','Smoke and Physical Routine','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_EMMEA','LAB','Analyses','Tobacco Routine','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_EMMEA','LAB','Analyses','Other Routine or Portifolio','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_EMMEA','LAB','Analyses','Specific Analyses','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_EMMEA','LAB','Analyses','Other Activities','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_EMMEA','PC_EMMEA','Sensory Evaluation','Sensodus Panel',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('TRINIDAD','PORT OF SPAIN','Manufactory','Prototype Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('TRINIDAD','PORT OF SPAIN','Manufactory','CPT Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('TRINIDAD','PORT OF SPAIN','Manufactory','Product Pack','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('TRINIDAD','PORT OF SPAIN','Manufactory','Product','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('TRINIDAD','PORT OF SPAIN','Manufactory','Full Operaction','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('TRINIDAD','PORT OF SPAIN','Manufactory','MQS1 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('TRINIDAD','PORT OF SPAIN','Manufactory','MQS2 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('TRINIDAD','PORT OF SPAIN','Manufactory','MQS3 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('TRINIDAD','PORT OF SPAIN','Manufactory','Product Test Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('TRINIDAD','PORT OF SPAIN','Manufactory','First Production Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('TRINIDAD','PORT OF SPAIN','Manufactory','Other','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('TRINIDAD','PORT OF SPAIN','Manufactory','Product Ventilation','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('TRINIDAD','PORT OF SPAIN','Manufactory','SKU List',NULL,NULL);
+
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','BIGOT','Manufactory','Prototype Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','BIGOT','Manufactory','CPT Manufactory','PA',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','BIGOT','Manufactory','Product Pack','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','BIGOT','Manufactory','Product','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','BIGOT','Manufactory','Full Operaction','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','BIGOT','Manufactory','MQS1 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','BIGOT','Manufactory','MQS2 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','BIGOT','Manufactory','MQS3 Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','BIGOT','Manufactory','Product Test Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','BIGOT','Manufactory','First Production Manufactory','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','BIGOT','Manufactory','Other','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','BIGOT','Manufactory','Product Ventilation','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','BIGOT','Manufactory','SKU List',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','LAB','Analyses','Smoke and Physical Routine','Sample',8);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','LAB','Analyses','Tobacco Routine','Sample',8);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','LAB','Analyses','Other Routine or Portifolio','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','LAB','Analyses','Specific Analyses','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('VENEZUELA','LAB','Analyses','Other Activities','Other',NULL);
+
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-CHLORIDE','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000001','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000002','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000004','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000005','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000006','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000007','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000008','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000009','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000010','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000011','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000012','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000013','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000014','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000015','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000016','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000017','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000018','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000019','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000020','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000021','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000022','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000023','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000024','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000025','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000026','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000027','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000028','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000029','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000030','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000031','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000032','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000033','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EA00000034','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - AGRICULTURAL EXPERIMENTS','AGRICULTURAL EXPERIMENTS-EXTRA','Sample',NULL);
+
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - ANVISA','ANVISA - PRE ANALYSIS','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - ANVISA','ANVISA - HOFFMANN','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - ANVISA','ANVISA RYO','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - BRAND MONITORING','BM-BAT','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - BRAND MONITORING','BM-COMP','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - BRAND MONITORING','BM-CUBA','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - CROP MONITORING','CROP MONITORING BRAZIL','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - CROP MONITORING','CROP MONITORING CUBA','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - LACAR','LACAR-AGROCHEMICALS','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - LACAR','LACAR-TOBACCO ROUTINE','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - COMPETITOR','PCI NEW PRODUCT-BRAZIL','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - COMPETITOR','PCI NEW PRODUCT-REGION','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - COMPETITOR','PCI-BAT','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - COMPETITOR','PCI-BAT/COSTING','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - COMPETITOR','PCI-COSTING','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - COMPETITOR','PCI-PRODUCT FACTS','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - REGUL. ITL.','REGUL. ITL-JP','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - REGUL. ITL.','REGUL. ITL-TW','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - REGUL. ITL.','REGUL. ITL-VE','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - RQI - CUBA','RQI-CUBA','Sample',NULL);
+
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - TOBACCO EXPORT','TOBACCO EXPORT-AGROCHEMICALS','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - TOBACCO EXPORT','TOBACCO EXPORT-SILICA','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - TSI CIGARETTE','TSI-CIGARETTE','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - TSI CIGARETTE','TSI-CIGARETTE EXTRA','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - TSI TOBACCO','TSI-CROP','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - TSI TOBACCO','TSI-SUPPLY CHAIN','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - TSI TOBACCO','TSI-VARIABILITY','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - TSI TOBACCO','TSI-TOBACCO EXTRA','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - DEER MONITORING','DEER MONITORING','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses - DEER MONITORING','DEER EXTRUSORA','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses','Other Activities','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses','Smoke and Physical Routine','Sample',7);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses','Specific Analyses','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','ASA','Analyses','Tobacco Routine','Sample',8);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LAS','Sensory Evaluation','Sensodus Panel','SM',10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LAS','Sensory Evaluation','Sensodus Panel','DPC',10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LAS','Sensory Evaluation','Sensodus Panel','DUO',10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LAS','Sensory Evaluation','Sensodus Panel','DFC',10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LAS','Sensory Evaluation','Sensodus Panel','N/A',10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LAS','Sensory Evaluation','Expert Panel','SM',10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LAS','Sensory Evaluation','Expert Panel','DPC',10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LAS','Sensory Evaluation','Expert Panel','DUO',10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LAS','Sensory Evaluation','Expert Panel','DFC',10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LAS','Sensory Evaluation','Expert Panel','N/A',10);
+
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LDF','Flavour Development','Flavour Development','Sample',1);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LDF','Flavour Development','Flavour Development','Unit',1);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LDF','Flavour Development','Other Routine or Portifolio','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LDF','Flavour Development','Other Routine or Portifolio','Unit',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LFM','Microbiological Analyses','Other Routine or Portifolio','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','LFM','Microbiological Analyses','Other Routine or Portifolio','Unit',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','STATS','Statistical Analysis','Consultancy',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','STATS','Statistical Analysis','Experiments Plan',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','STATS','Statistical Analysis','Data Analysis/Report',NULL,NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','SPECS','Packaging & Materials Specification','AMGP',NULL,10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','SPECS','Packaging & Materials Specification','Disclosure Ingredientes',NULL,10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','SPECS','Packaging & Materials Specification','Packaging',NULL,10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','SPECS','Packaging & Materials Specification','Tipping',NULL,10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','SPECS','Packaging & Materials Specification','Filter',NULL,10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','SPECS','Packaging & Materials Specification','Paper',NULL,10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','SPECS','Product Specification','SAP',NULL,10);
+
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','SPECS','Product Specification','Final Product Especification',NULL,10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','SPECS','Product Specification','PDS',NULL,10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','SPECS','Product Specification','Other',NULL,10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','SPECS','Tobacco or Blend Specification','Grade',NULL,10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','SPECS','Tobacco or Blend Specification','Blend',NULL,10);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Logistics','Cigarette Samples Receiving','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Logistics','Tobacco Receiving','Unit',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Logistics','Tobacco Receiving','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Logistics','Blend Receiving','Unit',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Logistics','Blend Receiving','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Logistics','Materials Receiving','Unit',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Logistics','Sample Sending','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Logistics','Tobacco Sending','Unit',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Logistics','Tobacco Sending','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Logistics','Materials Sending','Unit',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Logistics','Other','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Manufactory','Prototype Manufactory','PA',8);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Manufactory','CPT Manufactory','PA',15);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Manufactory','Product Ventilation','Product',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Manufactory','Product Ventilation','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Manufactory','Product Pack','Product',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Manufactory','Product Pack','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Manufactory','Product','Product',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Manufactory','Product','Prototype',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PPI','Manufactory','Other','Other',NULL);
+
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','RCPA','Logistics','Sample Defrosting','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','RCPA','Logistics','Cigarette Samples Receiving','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','RCPA','Logistics','Tobacco Receiving','Unit',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','RCPA','Logistics','Tobacco Receiving','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','RCPA','Logistics','Blend Receiving','Unit',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','RCPA','Logistics','Blend Receiving','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','RCPA','Logistics','Materials Receiving','Unit',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','RCPA','Logistics','Sample Receiving','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','RCPA','Logistics','Sample Sending','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','RCPA','Logistics','Tobacco Sending','Unit',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','RCPA','Logistics','Tobacco Sending','Sample',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','RCPA','Logistics','Materials Sending','Unit',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','RCPA','Logistics','Other','Other',NULL);
+INSERT INTO Activity(Site,Area,Stage,Action,Unit,LeadTime) VALUES('PC_A','PRC','Regulatory Disclosure','Disclosure Packaging',NULL,NULL);
+
+--BRANDS
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('43/70','P.11','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('AFTER HOURS (old PAYASOS)','P.52','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('ALAS','P.12','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('ALITAS','P.13','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('ARGENTINOS','P.14','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('BELMONT','P.10','Regional');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('BENSON AND HEDGES','P.07','CMB');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('BOHEMIOS','P.15','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('BOOTS','P.16','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('BRISTOL','P.17','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('BROADWAY','P.18','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('CAMEL','P.68','JV');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('CAPRI','P.19','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('CARLTON','P.20','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('CASINO','P.21','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('CHARM','P.22','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('COHIBA','P.23','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('CONSUL','P.24','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('CONTINENTAL','P.504','local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('CONWAY','P.25','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('CRAVEN','P.26','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('DELTA','P.27','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('DERBY','P.28','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('DU MAURIER','P.29','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('DUNHILL','P.01','GDB');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('EMBASSY','P.30','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('FIESTA','P.31','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('FREE','P.32','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('GITANES','P.69','JV');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('GOL 70','P.33','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('GOLDEN BEACH','P.73','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('GRATOS','P.34','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('H. UPMANN','P.35','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('HAMILTON','P.36','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('HILTON','P.37','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('HOLLYWOOD','P.38','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('IMPERIAL','P.39','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('INCA','P.40','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('JOCKEY CLUB','P.41','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('JOCKEY PORTEÑO','P.42','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('JOHN PLAYER GOLD LEAF','P.43','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('JOHN PLAYER STANDARD','P.506','local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('KENT','P.02','GDB');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('KOOL','P.08','CMB');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('LUCKY STRIKE','P.03','GDB');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('MATINEE','P.508','local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('MATTERHORN','P.44','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('MILPORT','P.509','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('MONTANA','P.45','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('MONTERREY','P.46','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('MORELLO','P.47','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('MT DOR','P.48','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('MUSTANG','P.75','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('NACIONAL','P.49','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('NEWPORT','P.50','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('PACIFICO','P.51','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('PALL MALL','P.04','GDB');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('PARISIENNES','P.71','JV');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('PETER JACKSON','P.507','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('PETER STUYVESANT','P.53','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('PHOENIX','P.54','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('PLAYERS','P.505','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('PLAZA','P.55','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('POPULAR','P.56','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('PREMIER','P.57','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('R&O','P.74','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('RALEIGH','P.58','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('REX','P.59','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('RICHMOND','P.503','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('RITZ','P.60','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('ROMEO Y JULIETA','P.61','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('ROTHMANS','P.09','CMB');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('ROTHMANS OF PALL MALL','P.62','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('ROYAL','P.63','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('SALEM','P.70','JV');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('SPORTSMAN','P.501','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('TACOMA','P.64','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('TICOS','P.65','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('TREVO','P.502','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('VEGAS','P.66','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('VICEROY','P.05','GDB');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('Vogue','P.06','GDB');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('WINFIELD','P.67','Local');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('WINSTON','P.72','JV');
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('All',NULL,NULL);
+INSERT INTO Brand(Name,Code,Brand.Range) VALUES('Other',NULL,NULL);
+
+--EndMarkets
+INSERT INTO EndMarket(Name) VALUES('ARGENTINA');
+INSERT INTO EndMarket(Name) VALUES('BRAZIL');
+INSERT INTO EndMarket(Name) VALUES('CANADA');
+INSERT INTO EndMarket(Name) VALUES('CARIBBEAN');
+INSERT INTO EndMarket(Name) VALUES('CENTRAL AMERICA');
+INSERT INTO EndMarket(Name) VALUES('CHILE');
+INSERT INTO EndMarket(Name) VALUES('COLOMBIA');
+INSERT INTO EndMarket(Name) VALUES('CUBA');
+INSERT INTO EndMarket(Name) VALUES('MEXICO');
+INSERT INTO EndMarket(Name) VALUES('PARAGUAY');
+INSERT INTO EndMarket(Name) VALUES('PERU');
+INSERT INTO EndMarket(Name) VALUES('TAIWAN');
+INSERT INTO EndMarket(Name) VALUES('URUGUAY');
+INSERT INTO EndMarket(Name) VALUES('VENEZUELA');
+INSERT INTO EndMarket(Name) VALUES('AMERICAS');
+INSERT INTO EndMarket(Name) VALUES('OTHER');
+
+--OpCos
+INSERT INTO OpCo(Name) VALUES('ARGENTINA');
+INSERT INTO OpCo(Name) VALUES('BRAZIL');
+INSERT INTO OpCo(Name) VALUES('CHILE');
+INSERT INTO OpCo(Name) VALUES('COLOMBIA');
+INSERT INTO OpCo(Name) VALUES('CUBA');
+INSERT INTO OpCo(Name) VALUES('HONDURAS');
+INSERT INTO OpCo(Name) VALUES('MEXICO');
+INSERT INTO OpCo(Name) VALUES('TRINIDAD');
+INSERT INTO OpCo(Name) VALUES('VENEZUELA');
+INSERT INTO OpCo(Name) VALUES('OTHER');
+
+--MainProjects
+INSERT INTO MainProject(Name) VALUES('AGRICULTURAL EXPERIMENTS');
+INSERT INTO MainProject(Name) VALUES('ANVISA');
+INSERT INTO MainProject(Name) VALUES('BLEND RACIONALIZ.');
+INSERT INTO MainProject(Name) VALUES('BRAND MIGRATION');
+INSERT INTO MainProject(Name) VALUES('BRAND MONITORING');
+INSERT INTO MainProject(Name) VALUES('COMPETITOR');
+INSERT INTO MainProject(Name) VALUES('CONSUMER COMPLAINTS');
+INSERT INTO MainProject(Name) VALUES('CROP COMMISSIONING');
+INSERT INTO MainProject(Name) VALUES('CROP MONITORING');
+INSERT INTO MainProject(Name) VALUES('CROSS-CHECK');
+INSERT INTO MainProject(Name) VALUES('DEER MONITORING');
+INSERT INTO MainProject(Name) VALUES('G4S');
+INSERT INTO MainProject(Name) VALUES('HEATHROW');
+INSERT INTO MainProject(Name) VALUES('INNOVATION');
+INSERT INTO MainProject(Name) VALUES('LACAR');
+INSERT INTO MainProject(Name) VALUES('OTP');
+INSERT INTO MainProject(Name) VALUES('PROCESS TECHNOLOGY');
+INSERT INTO MainProject(Name) VALUES('PRODUCT MAINTENANCE');
+INSERT INTO MainProject(Name) VALUES('R4R');
+INSERT INTO MainProject(Name) VALUES('RAW MATERIAL');
+INSERT INTO MainProject(Name) VALUES('RECON TECHNOLOGY');
+INSERT INTO MainProject(Name) VALUES('REGUL. ITL');
+INSERT INTO MainProject(Name) VALUES('RQI-CUBA');
+INSERT INTO MainProject(Name) VALUES('SENSORY PANEL STDS');
+INSERT INTO MainProject(Name) VALUES('TOBACCO BREEDING');
+INSERT INTO MainProject(Name) VALUES('TOBACCO EXPORT');
+INSERT INTO MainProject(Name) VALUES('TSI-CIGARETTE');
+INSERT INTO MainProject(Name) VALUES('TSI-TOBACCO');
+
+--PitCode
+INSERT INTO PitCode(Code) VALUES('N/A');
+INSERT INTO PitCode(Code) VALUES('AN0004 - ACRED ENSAIOS ANAL NBR ISO/IEC 17025:2005');
+INSERT INTO PitCode(Code) VALUES('AN0005 - PROG CONFIAB METROL NA SOUZA CRUZ');
+INSERT INTO PitCode(Code) VALUES('AN0025 - DET CLORETO VINILA FUM CIGS');
+INSERT INTO PitCode(Code) VALUES('AN0028 - DET ACRILAMIDA E ACETAMIDA FUM CIGS');
+INSERT INTO PitCode(Code) VALUES('AN0032 - DESENV NOVAS FERRAMENTAS ESTATISTICAS');
+INSERT INTO PitCode(Code) VALUES('AN0034 - DES MET DETERM DITERPENOS EM FUMO');
+INSERT INTO PitCode(Code) VALUES('AN0035 - DES MET DET HIDROCARBONETOS (PAHs) FUM CIG');
+INSERT INTO PitCode(Code) VALUES('AN0036 - DESENV OTIMIZAÇÃO MET DETERM COMP ORG FUM CIG');
+INSERT INTO PitCode(Code) VALUES('AN0037 - DES MET ALTER DETERM HCN FUM CIG POR UV-VIS');
+INSERT INTO PitCode(Code) VALUES('AN0038 - DES NOVA MET DETERM AMONIA FUM CIG');
+INSERT INTO PitCode(Code) VALUES('AN0040 - DES MET ALTERN DET MERCURIO FUM CIG ICP-MS');
+INSERT INTO PitCode(Code) VALUES('AN0042 - AMOSTRADOR AUTOMATICO');
+INSERT INTO PitCode(Code) VALUES('AN0043 - DES PROC EXT ÚNICA MÉT MULTIRRESÍDUO AGROQ');
+INSERT INTO PitCode(Code) VALUES('AN0044  - DES METODOLOGIA P/ ESTIMATIVA COMPON BLENDS ');
+INSERT INTO PitCode(Code) VALUES('FU0001 - CONT INFESTAÇÃO PÓS COLHEITA');
+INSERT INTO PitCode(Code) VALUES('FU0002 - MANEJO INTEG PRAGRAS');
+INSERT INTO PitCode(Code) VALUES('FU0003 - FITOTECNOL FUMO VIRGÍNIA');
+INSERT INTO PitCode(Code) VALUES('FU0005 - MELHORAMENTO DE FUMO');
+INSERT INTO PitCode(Code) VALUES('FU0006 - TECNOLOGIA DE SEMENTES');
+INSERT INTO PitCode(Code) VALUES('FU0007 - FITOTECNOL FUMO GALPÃO');
+INSERT INTO PitCode(Code) VALUES('FU0008 - FITOTECNOL FUMO ORIENTAL');
+INSERT INTO PitCode(Code) VALUES('FU0009 - MANEJO INTEG DOENÇAS');
+INSERT INTO PitCode(Code) VALUES('FU0011 - QUÍMICA DE FUMO');
+INSERT INTO PitCode(Code) VALUES('FU0012 - TECNOLOGIA DE PROD MUDAS');
+INSERT INTO PitCode(Code) VALUES('FU0013 - INOVAÇÃO TECNOL PROCESSOS DE IRRIGAÇÃO');
+INSERT INTO PitCode(Code) VALUES('FU0014 - INOVAÇÃO TECNOL PROCESSOS DE MECANIZAÇÃO');
+INSERT INTO PitCode(Code) VALUES('FU0015 - DESENV PROC ESPECIAL TRATAMENTO TABACO');
+INSERT INTO PitCode(Code) VALUES('PR0021 - DESENV TEC FCAS e USINAS SCRUZ ');
+INSERT INTO PitCode(Code) VALUES('PR0031 - DESENV TECNOLÓGICOS ÁREA MEIO AMBIENTE');
+INSERT INTO PitCode(Code) VALUES('PR0032 - NOVO SISTEMA DE ABERTURA DO POLI');
+INSERT INTO PitCode(Code) VALUES('DP0007 - PAPÉIS CIGARROS ESPECIAIS');
+INSERT INTO PitCode(Code) VALUES('DP0010 - AVAL NV PROD AROM/AMELIORANTES P /TABACO');
+INSERT INTO PitCode(Code) VALUES('DP0019 - DESENV PROD LOCAL BRAND E SEG LOW COST');
+INSERT INTO PitCode(Code) VALUES('DP0020 - DESENV PROD LOCAL BRAND SEG PREMIUM e VFM');
+INSERT INTO PitCode(Code) VALUES('DP0029 - OTIM PLANTA PILOTO AT PROJ PESQ/DESENV');
+INSERT INTO PitCode(Code) VALUES('DP0033 - OTIM TECNOL/FORM DEER e DEER X');
+INSERT INTO PitCode(Code) VALUES('DP0035 - AVAL TECNOLOGIAS FUMOS RECONSTITUÍDOS');
+INSERT INTO PitCode(Code) VALUES('DP0041 - DESENV PROD GLOB DRIVE BRANDS');
+INSERT INTO PitCode(Code) VALUES('DP0042 - DESENV ADESIVOS DE EMBALAGEM DE CIG');
+INSERT INTO PitCode(Code) VALUES('DP0044 - IMPLEMENT FILTRO TIPO CPA /CPS EM CIG S CRUZ');
+INSERT INTO PitCode(Code) VALUES('DP0045 - PATENTES SOUZA CRUZ S.A.');
+INSERT INTO PitCode(Code) VALUES('DP0046 - ESTUDO DE SHELF LIFE DE PRODUTOS RDC E TNE');
+INSERT INTO PitCode(Code) VALUES('AMC - AH  Análise de Hoffmann');
+INSERT INTO PitCode(Code) VALUES('AMC - OA  Outras Análises');
+INSERT INTO PitCode(Code) VALUES('AMC - DP/P  Desenvolv Produto / Processo');
+INSERT INTO PitCode(Code) VALUES('AMC - PE  Pesquisas');
+INSERT INTO PitCode(Code) VALUES('AMC - Patentes');
+INSERT INTO PitCode(Code) VALUES('ARG - AH  Análise de Hoffmann');
+INSERT INTO PitCode(Code) VALUES('ARG - OA  Outras Análises');
+INSERT INTO PitCode(Code) VALUES('ARG - DP/P  Desenvolv Produto / Processo');
+INSERT INTO PitCode(Code) VALUES('ARG - PE  Pesquisas');
+INSERT INTO PitCode(Code) VALUES('ARG - Patentes');
+INSERT INTO PitCode(Code) VALUES('BAT - AH  Análise de Hoffmann');
+INSERT INTO PitCode(Code) VALUES('BAT - OA  Outras Análises');
+INSERT INTO PitCode(Code) VALUES('BAT - TSI');
+INSERT INTO PitCode(Code) VALUES('BAT - COMPETITORS');
+INSERT INTO PitCode(Code) VALUES('BAT - TAIWAN');
+INSERT INTO PitCode(Code) VALUES('BAT - ATC');
+INSERT INTO PitCode(Code) VALUES('BAT - ONIX');
+INSERT INTO PitCode(Code) VALUES('CAR - AH  Análise de Hoffmann');
+INSERT INTO PitCode(Code) VALUES('CAR - OA  Outras Análises');
+INSERT INTO PitCode(Code) VALUES('CAR - DP/P  Desenvolv Produto / Processo');
+INSERT INTO PitCode(Code) VALUES('CAR - PE  Pesquisas');
+INSERT INTO PitCode(Code) VALUES('CAR - Patentes');
+INSERT INTO PitCode(Code) VALUES('CHI - AH  Análise de Hoffmann');
+INSERT INTO PitCode(Code) VALUES('CHI - AO  Outras Análises');
+INSERT INTO PitCode(Code) VALUES('CHI - DP/P  Desenvolv Produto / Processo');
+INSERT INTO PitCode(Code) VALUES('CHI - PE  Pesquisas');
+INSERT INTO PitCode(Code) VALUES('CHI - Patentes');
+INSERT INTO PitCode(Code) VALUES('MEX - AH  Análise de Hoffmann');
+INSERT INTO PitCode(Code) VALUES('MEX - OA  Outras Análises');
+INSERT INTO PitCode(Code) VALUES('MEX - DP/P  Desenvolv Produto / Processo');
+INSERT INTO PitCode(Code) VALUES('MEX - PE  Pesquisas');
+INSERT INTO PitCode(Code) VALUES('MEX - Patentes');
+INSERT INTO PitCode(Code) VALUES('VEN - AH  Análise de Hoffmann');
+INSERT INTO PitCode(Code) VALUES('VEN - OA  Outras Análises');
+INSERT INTO PitCode(Code) VALUES('VEN - DP/P  Desenvolv Produto / Processo');
+INSERT INTO PitCode(Code) VALUES('VEN - PE  Pesquisas');
+INSERT INTO PitCode(Code) VALUES('VEN - Patentes');
+INSERT INTO PitCode(Code) VALUES('GLRT - Global Leaf Research & Technology');
+INSERT INTO PitCode(Code) VALUES('CUBA - AH  Análise de Hoffmann');
+INSERT INTO PitCode(Code) VALUES('CUBA - OA  Outras Análises');
+INSERT INTO PitCode(Code) VALUES('CUBA - DP/P  Desenvolv Produto / Processo');
+INSERT INTO PitCode(Code) VALUES('CUBA - PE  Pesquisas');
+INSERT INTO PitCode(Code) VALUES('GLRT e CUBA - Patentes');
+INSERT INTO PitCode(Code) VALUES('COL - AH  Análise de Hoffmann');
+INSERT INTO PitCode(Code) VALUES('COL - OA  Outras Análises');
+INSERT INTO PitCode(Code) VALUES('COL - DP/P  Desenvolv Produto / Processo');
+INSERT INTO PitCode(Code) VALUES('COL - PE  Pesquisas');
+INSERT INTO PitCode(Code) VALUES('COL - Patentes');
+INSERT INTO PitCode(Code) VALUES('LBIC - 01 Breeding');
+INSERT INTO PitCode(Code) VALUES('LBIC - 02 Fermentation');
+INSERT INTO PitCode(Code) VALUES('LBIC - 03 Curing');
+INSERT INTO PitCode(Code) VALUES('LBIC - 04 Patentes');
+INSERT INTO PitCode(Code) VALUES('LBIC - 05 Leaf Treatment');
+INSERT INTO PitCode(Code) VALUES('CAN - AH  Análise de Hoffmann');
+INSERT INTO PitCode(Code) VALUES('CAN - OA  Outras Análises');
+INSERT INTO PitCode(Code) VALUES('CAN - DP/P  Desenvolv Produto / Processo');
+INSERT INTO PitCode(Code) VALUES('CAN - PE  Pesquisas');
+INSERT INTO PitCode(Code) VALUES('CAN - Patentes');
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -9,19 +9,17 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
-import planning.Planning.DatabaseConnection;
-import planning.Planning.Login;
-import planning.Planning.LoginSqlAdapter;
-import planning.Planning.People;
-import planning.Planning.PeopleSqlAdapter;
+import planning.Data.Login;
+import planning.Data.People;
+import planning.DataAdapter.DatabaseConnection;
+import planning.DataAdapter.LoginSqlAdapter;
+import planning.DataAdapter.PeopleSqlAdapter;
 
 
 
 public class FrameLogin {
 	
 	private Login newLogin = new Login();
-	private PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
-	private LoginSqlAdapter mLoginSqlAdapter = new LoginSqlAdapter();
 	
 	private JPanel panel = new JPanel();
 	private JLabel lbPassword = new JLabel("Password:");
@@ -48,12 +46,12 @@ public class FrameLogin {
 		
 		boolean userFound = false;
 		
-		List<People> mListPeople = mPeopleSqlAdapter.SelectPeople(mDataConnection);
+		List<People> mListPeople = PeopleSqlAdapter.selectPeople(mDataConnection);
 			
 		Login pLogin = new Login();
 		for(People p:mListPeople){
 			
-			pLogin = mLoginSqlAdapter.SelectLogin(mDataConnection, p);
+			pLogin = LoginSqlAdapter.selectLogin(mDataConnection, p);
 			
 			if(pLogin.getUser().equals(newLogin.getUser())){
 				userFound = true;

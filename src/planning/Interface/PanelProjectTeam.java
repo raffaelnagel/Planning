@@ -28,14 +28,14 @@ import javax.swing.SwingConstants;
 import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 
-import planning.Planning.DatabaseConnection;
-import planning.Planning.MyListCellRenderer;
-import planning.Planning.People;
-import planning.Planning.PeopleSqlAdapter;
-import planning.Planning.Planning;
-import planning.Planning.Project;
-import planning.Planning.ProjectSqlAdapter;
-import planning.Planning.Team;
+import planning.Data.People;
+import planning.Data.Planning;
+import planning.Data.Project;
+import planning.Data.Team;
+import planning.DataAdapter.DatabaseConnection;
+import planning.DataAdapter.PeopleSqlAdapter;
+import planning.DataAdapter.ProjectSqlAdapter;
+import planning.DataAdapter.TeamSqlAdapter;
 
 @SuppressWarnings("serial")
 public class PanelProjectTeam extends JPanel{
@@ -55,7 +55,7 @@ public class PanelProjectTeam extends JPanel{
 			DatabaseConnection mData = Planning.OpenConnection();
 			
 			List<Team> mListTeam = new ArrayList<Team>();
-			mListTeam = Team.SelectPeopleTeam(mData, p);
+			mListTeam = TeamSqlAdapter.selectPeopleTeam(mData, p);
 			
 			listEmployeeModel.clear();
 			List<String> employees = new ArrayList<String>();
@@ -94,12 +94,11 @@ public class PanelProjectTeam extends JPanel{
 			final DatabaseConnection mData = Planning.OpenConnection();
 			
 			//-- project code
-			final ProjectSqlAdapter mProjectSqlAdapter = new ProjectSqlAdapter();
 			List<Project> mListProject;
 			if(loggedUser.getLogin().getPermissionLevel() == 0){
-				mListProject = mProjectSqlAdapter.SelectProject(mData);
+				mListProject = ProjectSqlAdapter.selectProject(mData);
 			}else{
-				mListProject = mProjectSqlAdapter.SelectProject(mData, loggedUser);
+				mListProject = ProjectSqlAdapter.selectProject(mData, loggedUser);
 			}
 			final List<String> projectCodes = new ArrayList<String>();
 			projectCodes.add(" ");
@@ -116,10 +115,10 @@ public class PanelProjectTeam extends JPanel{
 					int projectCode_index = cbProjectCode.getSelectedIndex();
 					String Code = projectCodes.get(projectCode_index);
 					DatabaseConnection mData = Planning.OpenConnection();
-					List<Project> mListProject = mProjectSqlAdapter.SelectProject(mData, "ProjectCode", Code);
+					List<Project> mListProject = ProjectSqlAdapter.selectProject(mData, "ProjectCode", Code);
 					Project mProject = mListProject.get(0);
 					tfProjectName.setText(mProject.getName());
-					tfProjectCategory.setText(mProject.getCategory().toString());
+					tfProjectCategory.setText(mProject.getCategory().getName().toString());
 					refreshListItems(mProject);
 					mData.closeConnection();
 				}
@@ -127,9 +126,8 @@ public class PanelProjectTeam extends JPanel{
 			});
 			
 			//-- employee name
-			final PeopleSqlAdapter mPeopleSqlAdapter = new PeopleSqlAdapter();
 			List<People> mListPeople = new ArrayList<People>();
-			mListPeople = mPeopleSqlAdapter.SelectPeople(mData);
+			mListPeople = PeopleSqlAdapter.selectPeople(mData);
 						
 			List<String> employees = new ArrayList<String>();
 			employees.add(" ");
@@ -171,16 +169,16 @@ public class PanelProjectTeam extends JPanel{
 							if(option == JOptionPane.YES_OPTION){
 								DatabaseConnection mData = Planning.OpenConnection();
 								//get Project								
-								List<Project> mListProject = mProjectSqlAdapter.SelectProject(mData, "ProjectCode", Code);
+								List<Project> mListProject = ProjectSqlAdapter.selectProject(mData, "ProjectCode", Code);
 								Project mProject = mListProject.get(0);								
 								
 								//get People								
-								List<People> mListPeople = mPeopleSqlAdapter.SelectPeople(mData, "Name", peopleName);
+								List<People> mListPeople = PeopleSqlAdapter.selectPeople(mData, "Name", peopleName);
 								People mPeople = mListPeople.get(0);			
 								
 								Team mTeam = new Team(mPeople, mProject, resp);
 								
-								Team.InsertPeopleTeam(mData, mTeam);
+								TeamSqlAdapter.insertPeopleTeam(mData, mTeam);
 								
 								refreshListItems(mProject);
 								mData.closeConnection();
@@ -221,15 +219,15 @@ public class PanelProjectTeam extends JPanel{
 							if(option == JOptionPane.YES_OPTION){
 								
 								//get Project								
-								List<Project> mListProject = mProjectSqlAdapter.SelectProject(mData, "ProjectCode", Code);
+								List<Project> mListProject = ProjectSqlAdapter.selectProject(mData, "ProjectCode", Code);
 								Project mProject = mListProject.get(0);								
 								
 								//get People								
-								List<People> mListPeople = mPeopleSqlAdapter.SelectPeople(mData, "Name", peopleName);
+								List<People> mListPeople = PeopleSqlAdapter.selectPeople(mData, "Name", peopleName);
 								People mPeople = mListPeople.get(0);			
 								
 								Team mTeam = new Team(mPeople, mProject, "");
-								Team.RemovePeopleTeam(mData, mTeam);
+								TeamSqlAdapter.removePeopleTeam(mData, mTeam);
 																
 								refreshListItems(mProject);
 							}

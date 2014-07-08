@@ -22,13 +22,13 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 
-import planning.Planning.DatabaseConnection;
-import planning.Planning.People;
-import planning.Planning.Plan;
-import planning.Planning.PlanSqlAdapter;
-import planning.Planning.Planning;
-import planning.Planning.Project;
-import planning.Planning.ProjectSqlAdapter;
+import planning.Data.People;
+import planning.Data.Planning;
+import planning.Data.Project;
+import planning.Data.Schedule;
+import planning.DataAdapter.DatabaseConnection;
+import planning.DataAdapter.ProjectSqlAdapter;
+import planning.DataAdapter.ScheduleSqlAdapter;
 
 
 @SuppressWarnings("serial")
@@ -66,22 +66,28 @@ public class FrameMain extends JFrame{
         getContentPane().repaint();
 	}
 	
+	public void OpenPanelNew(People loggedUser){
+		getContentPane().removeAll();
+        PanelProjectNew fmNewProject = new PanelProjectNew(loggedUser);
+        getContentPane().add(fmNewProject);
+        getContentPane().validate();
+        getContentPane().repaint();
+	}
 	private void RefreshIcons(People loggedUser){
 		DatabaseConnection mData = Planning.OpenConnection();
 		List<Project> mListProject = new ArrayList<Project>();
-		ProjectSqlAdapter mProjectSqlAdapter = new ProjectSqlAdapter();
-		mListProject = mProjectSqlAdapter.SelectProject(mData, loggedUser);
+		
+		mListProject = ProjectSqlAdapter.selectProject(mData, loggedUser);
 		
 		lbNumberProject.setText(String.valueOf(mListProject.size()));
-		
-		PlanSqlAdapter mPlanSqlAdapter = new PlanSqlAdapter();
-		List<Plan> mListPlan = new ArrayList<Plan>();
+				
+		List<Schedule> mListSchedule = new ArrayList<Schedule>();
 		Integer countPlan = 0;
 		
 		for(Project p:mListProject){
-			mListPlan = mPlanSqlAdapter.SelectPlan(mData, p);
-			for(Plan pl:mListPlan){
-				if(pl.getStatus() != Plan.PlanStatus.COMPLETE){
+			mListSchedule = ScheduleSqlAdapter.selectSchedule(mData, p);
+			for(Schedule pl:mListSchedule){
+				if(pl.getStatus() != Schedule.ScheduleStatus.COMPLETE){
 					countPlan++;
 				}
 			}			
@@ -105,11 +111,7 @@ public class FrameMain extends JFrame{
 		menuNewProject.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent event) {
-                getContentPane().removeAll();
-                PanelProjectNew fmNewProject = new PanelProjectNew(loggedUser);
-                getContentPane().add(fmNewProject);
-                getContentPane().validate();
-                getContentPane().repaint();
+            	OpenPanelNew(loggedUser);
             }
         });
 		menuEditProject.setText("Edit Project");
@@ -168,7 +170,7 @@ public class FrameMain extends JFrame{
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
 				getContentPane().removeAll();
-				PanelPlanNew fmPlanNew = new PanelPlanNew(loggedUser);
+				PanelScheduleNew fmPlanNew = new PanelScheduleNew(loggedUser);
             	getContentPane().add(fmPlanNew);
             	getContentPane().validate();
             	getContentPane().repaint();				

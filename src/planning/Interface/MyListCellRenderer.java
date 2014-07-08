@@ -21,6 +21,7 @@ public class MyListCellRenderer extends JLabel implements ListCellRenderer {
         if (isSelected) {
             setBackground(Color.gray);
             setForeground(Color.white);
+            
         } else {        	  
         	if (index % 2 == 0){ 
         		setBackground(Color.lightGray);
